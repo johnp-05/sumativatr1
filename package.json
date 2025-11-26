@@ -47,10 +47,12 @@
     "react-native-worklets": "0.5.1",
     "tailwindcss": "^3.4.18",
     "update": "^0.7.4",
-    "upgrade": "^1.1.0"
+    "upgrade": "^1.1.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
+    "concurrently": "^9.2.1",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
     "typescript": "~5.9.2"
