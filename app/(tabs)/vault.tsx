@@ -1,0 +1,147 @@
+import { View, Text, TouchableOpacity, Animated } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useVault } from "@/context/vault-context";
+import { useRouter } from "expo-router";
+import { useState, useRef, useEffect } from "react";
+import { Lock, Delete } from "lucide-react-native";
+
+export default function VaultAccessScreen() {
+  const { unlock, hasPin, isUnlocked } = useVault();
+  const router = useRouter();
+  const [pin, setPin] = useState("");
+  const [error, setError] = useState("");
+  const shakeAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  useEffect(() => {
+    if (isUnlocked) {
+      router.push("/vault/index");
+    }
+  }, [isUnlocked]);
+
+  const shake = () => {
+    Animated.sequence([
+      Animated.timing(shakeAnim, { toValue: 10, duration: 50, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: -10, duration: 50, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: 10, duration: 50, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: 0, duration: 50, useNativeDriver: true }),
+    ]).start();
+  };
+
+  const handleNumberPress = (num: string) => {
+    if (pin.length < 6) {
+      const newPin = pin + num;
+      setPin(newPin);
+      setError("");
+
+      if (newPin.length === 6) {
+        setTimeout(() => {
+          const success = unlock(newPin);
+          if (!success) {
+            setError("PIN incorrecto");
+            shake();
+            setPin("");
+          }
+        }, 100);
+      }
+    }
+  };
+
+  const handleDelete = () => {
+    setPin(pin.slice(0, -1));
+    setError("");
+  };
+
+  const renderPinDots = () => {
+    return (
+      <View className="flex-row justify-center mb-8">
+        {[0, 1, 2, 3, 4, 5].map((i) => (
+          <View
+            key={i}
+            className={`w-4 h-4 rounded-full mx-2 ${
+              i < pin.length ? "bg-purple-500" : "bg-gray-700"
+            }`}
+          />
+        ))}
+      </View>
+    );
+  };
+
+  const renderKeypad = () => {
+    const numbers = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "⌫"];
+    
+    return (
+      <View className="w-full max-w-xs">
+        {[0, 1, 2, 3].map((row) => (
+          <View key={row} className="flex-row justify-around mb-4">
+            {numbers.slice(row * 3, row * 3 + 3).map((num, index) => {
+              if (num === "") {
+                return <View key={index} className="w-20 h-20" />;
+              }
+              
+              if (num === "⌫") {
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={handleDelete}
+                    className="w-20 h-20 bg-gray-700 rounded-full items-center justify-center"
+                  >
+                    <Delete color="#fff" size={28} />
+                  </TouchableOpacity>
+                );
+              }
+
+              return (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => handleNumberPress(num)}
+                  className="w-20 h-20 bg-gray-700 rounded-full items-center justify-center active:bg-gray-600"
+                >
+                  <Text className="text-white text-2xl font-semibold">{num}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        ))}
+      </View>
+    );
+  };
+
+  return (
+    <SafeAreaView className="flex-1 bg-gray-900">
+      <Animated.View 
+        className="flex-1 items-center justify-center px-6"
+        style={{ 
+          opacity: fadeAnim,
+          transform: [{ translateX: shakeAnim }] 
+        }}
+      >
+        <View className="items-center mb-12">
+          <View className="w-24 h-24 bg-purple-600 rounded-full items-center justify-center mb-4">
+            <Lock color="#fff" size={40} />
+          </View>
+          <Text className="text-white text-2xl font-bold mb-2">Bóveda Segura</Text>
+          <Text className="text-gray-400 text-center">
+            {hasPin ? "Ingresa tu PIN de 6 dígitos" : "Crea un PIN de 6 dígitos"}
+          </Text>
+        </View>
+
+        {renderPinDots()}
+
+        {error && (
+          <Text className="text-red-500 mb-4 text-center">{error}</Text>
+        )}
+
+        {renderKeypad()}
+      </Animated.View>
+    </SafeAreaView>
+  );
+}
