@@ -1,53 +1,193 @@
-> Edited for use in IDX on 07/09/12
+# Sumativa TR1 - Aplicación de Gestión de Tareas
 
-# Welcome to your Expo app 👋
+Una aplicación React Native construida con Expo que permite gestionar tareas con integración de JSON Server y Gemini AI.
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Características
 
-## Get started
+- ✅ **Gestión de Tareas (CRUD)**: Crear, leer, actualizar y eliminar tareas
+- ✅ **Validación de Formularios**: Validación alfanumérica para campos de texto
+- ✅ **Estado Global**: Implementado con Context API para evitar prop-drilling
+- ✅ **Navegación**: Expo Router con rutas basadas en archivos y parámetros dinámicos
+- ✅ **Gemini AI**: Chat integrado y sugerencias automáticas de descripción
+- ✅ **Modo Oscuro/Claro**: Soporte para temas según preferencias del sistema
 
-#### Android
+## Requisitos Previos
 
-Android previews are defined as a `workspace.onStart` hook and started as a vscode task when the workspace is opened/started.
+- Node.js 18+
+- npm o yarn
+- Expo CLI (`npm install -g expo-cli`)
 
-Note, if you can't find the task, either:
-- Rebuild the environment (using command palette: `IDX: Rebuild Environment`), or
-- Run `npm run android -- --tunnel` command manually run android and see the output in your terminal. The device should pick up this new command and switch to start displaying the output from it.
+## Instalación
 
-In the output of this command/task, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You'll also find options to open the app's developer menu, reload the app, and more.
-
-#### Web
-
-Web previews will be started and managred automatically. Use the toolbar to manually refresh.
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
+1. Clona el repositorio:
 ```bash
-npm run reset-project
+git clone <url-del-repositorio>
+cd sumativatr1
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2. Instala las dependencias:
+```bash
+npm install
+```
 
-## Learn more
+3. Configura la API key de Gemini AI:
+```bash
+cp .env.example .env
+```
+Edita el archivo `.env` y añade tu API key de Gemini:
+```
+EXPO_PUBLIC_GEMINI_API_KEY=tu_api_key_aqui
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+Puedes obtener una API key en: https://makersuite.google.com/app/apikey
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Uso
 
-## Join the community
+### Ejecutar JSON Server
 
-Join our community of developers creating universal apps.
+JSON Server simula una API REST para gestionar las tareas.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+npm run server
+```
+
+Esto iniciará el servidor en `http://localhost:3001`. Los endpoints disponibles son:
+
+- `GET /tasks` - Obtener todas las tareas
+- `GET /tasks/:id` - Obtener una tarea específica
+- `POST /tasks` - Crear una nueva tarea
+- `PATCH /tasks/:id` - Actualizar una tarea
+- `DELETE /tasks/:id` - Eliminar una tarea
+
+### Ejecutar la Aplicación
+
+En una terminal separada:
+
+```bash
+npm start
+```
+
+O para ejecutar todo simultáneamente (requiere `concurrently`):
+```bash
+npm install -D concurrently
+npm run dev
+```
+
+### Opciones de Ejecución
+
+- **Web**: Presiona `w` en la terminal
+- **Android**: Presiona `a` (requiere emulador o dispositivo conectado)
+- **iOS**: Presiona `i` (requiere Xcode en macOS)
+
+## Estructura del Proyecto
+
+```
+sumativatr1/
+├── app/                    # Pantallas (Expo Router)
+│   ├── (tabs)/            # Pestañas de navegación
+│   │   ├── index.tsx      # Pantalla principal
+│   │   ├── tasks.tsx      # Lista de tareas
+│   │   └── explore.tsx    # Pantalla de exploración
+│   ├── task/              # Rutas dinámicas para tareas
+│   │   ├── create.tsx     # Crear nueva tarea
+│   │   └── [id].tsx       # Editar tarea (parámetro dinámico)
+│   ├── gemini.tsx         # Chat con Gemini AI
+│   └── _layout.tsx        # Layout principal
+├── components/            # Componentes reutilizables
+├── context/               # Contextos de React
+│   └── task-context.tsx   # Estado global de tareas
+├── services/              # Servicios de API
+│   ├── task-service.ts    # Operaciones CRUD de tareas
+│   └── gemini-service.ts  # Integración con Gemini AI
+├── utils/                 # Utilidades
+│   └── validation.ts      # Validación de formularios
+├── db.json               # Base de datos de JSON Server
+└── .env.example          # Ejemplo de variables de entorno
+```
+
+## Validación de Formularios
+
+Los formularios de tareas incluyen validación para:
+
+- **Título**: Obligatorio, 3-100 caracteres, solo alfanuméricos y puntuación básica
+- **Descripción**: Opcional, máximo 500 caracteres, solo alfanuméricos y puntuación básica
+
+```typescript
+// Ejemplo de uso
+import { validateTaskTitle, validateTaskDescription } from '@/utils/validation';
+
+const titleValidation = validateTaskTitle('Mi tarea');
+if (!titleValidation.isValid) {
+  console.log(titleValidation.error);
+}
+```
+
+## Integración con Gemini AI
+
+### Configuración
+
+1. Obtén una API key en [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Añade la key al archivo `.env`:
+```
+EXPO_PUBLIC_GEMINI_API_KEY=tu_api_key_aqui
+```
+
+### Uso
+
+La aplicación ofrece dos formas de interactuar con Gemini AI:
+
+1. **Chat directo**: Accede desde la pantalla principal al botón "Gemini AI"
+2. **Sugerencias**: Al crear una tarea, usa el botón "Sugerir con IA" para generar una descripción automática
+
+```typescript
+// Ejemplo de uso del servicio
+import { geminiService } from '@/services/gemini-service';
+
+const response = await geminiService.chat('¿Cómo organizo mis tareas?');
+const suggestion = await geminiService.suggestTaskDescription('Estudiar React');
+```
+
+## Context API
+
+El estado de las tareas se gestiona globalmente con Context API:
+
+```typescript
+import { useTasks } from '@/context/task-context';
+
+function MiComponente() {
+  const { tasks, addTask, updateTask, deleteTask, loading, error } = useTasks();
+  
+  // Usar el estado y las funciones...
+}
+```
+
+## Scripts Disponibles
+
+| Comando | Descripción |
+|---------|-------------|
+| `npm start` | Inicia Expo |
+| `npm run server` | Inicia JSON Server en puerto 3001 |
+| `npm run web` | Abre la app en el navegador |
+| `npm run android` | Abre en emulador Android |
+| `npm run ios` | Abre en simulador iOS |
+| `npm run lint` | Ejecuta el linter |
+
+## Tecnologías Utilizadas
+
+- **Expo SDK 54**: Framework de desarrollo
+- **Expo Router 6**: Navegación basada en archivos
+- **React Native 0.81**: Framework de UI
+- **NativeWind**: Estilos con Tailwind CSS
+- **JSON Server**: API REST simulada
+- **Google Generative AI**: Integración con Gemini AI
+- **TypeScript**: Tipado estático
+
+## Notas de Seguridad
+
+- Nunca compartas tu API key de Gemini
+- El archivo `.env` está incluido en `.gitignore` para proteger tus credenciales
+- En producción, usa variables de entorno del servidor
+
+## Licencia
+
+Proyecto privado para propósitos educativos.

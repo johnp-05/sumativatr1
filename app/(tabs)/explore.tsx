@@ -107,6 +107,6 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     flexDirection: 'row',
-    gap: 8,
+    marginBottom: 16,
   },
 });
