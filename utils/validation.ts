@@ -3,14 +3,15 @@ export interface ValidationResult {
   error?: string;
 }
 
+// Regex for alphanumeric validation with Spanish characters and basic punctuation
+const ALPHANUMERIC_REGEX = /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s.,!?()-]+$/;
+
 export function validateAlphanumeric(value: string): ValidationResult {
   if (!value || value.trim().length === 0) {
     return { isValid: false, error: 'Este campo no puede estar vacío' };
   }
 
-  // Allow alphanumeric characters, spaces, and common punctuation
-  const alphanumericRegex = /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s.,!?()-]+$/;
-  if (!alphanumericRegex.test(value)) {
+  if (!ALPHANUMERIC_REGEX.test(value)) {
     return {
       isValid: false,
       error: 'Solo se permiten caracteres alfanuméricos y signos de puntuación básicos',

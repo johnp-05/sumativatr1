@@ -6,7 +6,8 @@ export interface Task {
   createdAt: string;
 }
 
-const API_BASE_URL = 'http://localhost:3001';
+// Use environment variable for API URL, fallback to localhost for development
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3001';
 
 export const taskService = {
   async getTasks(): Promise<Task[]> {

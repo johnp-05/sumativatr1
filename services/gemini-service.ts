@@ -10,12 +10,22 @@ const getGeminiClient = () => {
   return new GoogleGenerativeAI(apiKey);
 };
 
+// Sanitize user input to prevent prompt injection
+function sanitizeInput(input: string): string {
+  // Remove potential prompt injection patterns
+  return input
+    .replace(/[<>{}[\]\\]/g, '') // Remove special characters
+    .trim()
+    .slice(0, 200); // Limit length
+}
+
 export const geminiService = {
   async chat(prompt: string): Promise<string> {
     try {
       const genAI = getGeminiClient();
       const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-      const result = await model.generateContent(prompt);
+      const sanitizedPrompt = sanitizeInput(prompt);
+      const result = await model.generateContent(sanitizedPrompt);
       const response = result.response;
       return response.text();
     } catch (error) {
@@ -27,7 +37,8 @@ export const geminiService = {
   },
 
   async suggestTaskDescription(title: string): Promise<string> {
-    const prompt = `Dado el título de una tarea "${title}", sugiere una breve descripción para esta tarea. La descripción debe ser concisa (máximo 100 caracteres) y útil. Responde solo con la descripción, sin explicaciones adicionales.`;
+    const sanitizedTitle = sanitizeInput(title);
+    const prompt = `Dado el título de una tarea "${sanitizedTitle}", sugiere una breve descripción para esta tarea. La descripción debe ser concisa (máximo 100 caracteres) y útil. Responde solo con la descripción, sin explicaciones adicionales.`;
     return this.chat(prompt);
   },
 };
