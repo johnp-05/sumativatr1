@@ -23,7 +23,7 @@ export default function VaultAccessScreen() {
 
   useEffect(() => {
     if (isUnlocked) {
-      router.push("/vault/index");
+      router.push("/vault/tasks");
     }
   }, [isUnlocked]);
 
