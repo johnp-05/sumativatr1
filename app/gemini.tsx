@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
   },
   messagesContent: {
     padding: 16,
-    gap: 12,
+    // gap removed for web compatibility,
   },
   emptyState: {
     flex: 1,
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     padding: 12,
-    gap: 12,
+    // gap removed for web compatibility,
     borderTopWidth: 1,
     borderTopColor: '#e0e0e0',
   },

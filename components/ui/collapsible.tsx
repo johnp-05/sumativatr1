@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
   heading: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    // gap removed for web compatibility,
   },
   content: {
     marginTop: 6,

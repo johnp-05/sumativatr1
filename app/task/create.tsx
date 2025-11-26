@@ -184,10 +184,10 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   form: {
-    gap: 20,
+    // gap removed for web compatibility,
   },
   inputGroup: {
-    gap: 8,
+    // gap removed for web compatibility,
   },
   labelRow: {
     flexDirection: 'row',

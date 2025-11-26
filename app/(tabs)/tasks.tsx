@@ -151,7 +151,6 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 20,
-    gap: 12,
   },
   taskCard: {
     borderRadius: 12,
@@ -202,10 +201,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     marginTop: 12,
-    gap: 16,
   },
   actionButton: {
     paddingVertical: 4,
+    marginLeft: 16,
   },
   actionText: {
     fontSize: 14,
