@@ -71,17 +71,15 @@ const styles = StyleSheet.create({
   titleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    marginBottom: 16,
   },
   stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+    marginBottom: 16,
   },
   featureCard: {
     padding: 16,
     borderRadius: 12,
     borderWidth: 2,
-    gap: 8,
   },
   reactLogo: {
     height: 178,
