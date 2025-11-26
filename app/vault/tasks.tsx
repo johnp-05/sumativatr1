@@ -1,18 +1,25 @@
-import { View, Text, FlatList, TouchableOpacity, Alert, Animated } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, Alert, Animated, TextInput, Modal } from "react-native";
 import { useVault } from "@/context/vault-context";
 import { useRouter } from "expo-router";
 import { useState, useRef, useEffect } from "react";
-import { Plus, Trash2, Edit, CheckCircle, Circle, LogOut, Lock } from "lucide-react-native";
+import { Plus, Trash2, CheckCircle, Circle, LogOut, Lock, X } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function VaultTasksScreen() {
-  const { vaultTasks, lock, deleteVaultTask, toggleVaultTaskComplete, addVaultTask } = useVault();
+  const { vaultTasks, lock, deleteVaultTask, toggleVaultTaskComplete, addVaultTask, isUnlocked } = useVault();
   const router = useRouter();
-  const [showDeleteDialog, setShowDeleteDialog] = useState<string | null>(null);
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [newTaskDescription, setNewTaskDescription] = useState("");
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
   useEffect(() => {
+    if (!isUnlocked) {
+      router.replace("/(tabs)/vault");
+      return;
+    }
+
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -25,7 +32,7 @@ export default function VaultTasksScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-  }, []);
+  }, [isUnlocked]);
 
   const handleLock = () => {
     Alert.alert("Cerrar Bóveda", "¿Deseas cerrar la bóveda?", [
@@ -34,7 +41,7 @@ export default function VaultTasksScreen() {
         text: "Cerrar",
         onPress: () => {
           lock();
-          router.back();
+          router.replace("/(tabs)/vault");
         },
       },
     ]);
@@ -55,42 +62,26 @@ export default function VaultTasksScreen() {
     );
   };
 
-  const handleCreateTask = () => {
-    Alert.prompt(
-      "Nueva Tarea Privada",
-      "Ingresa el título de la tarea",
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Crear",
-          onPress: (title) => {
-            if (title && title.trim()) {
-              Alert.prompt(
-                "Descripción",
-                "Ingresa la descripción (opcional)",
-                [
-                  { text: "Omitir", style: "cancel", onPress: () => {
-                    addVaultTask({ title: title.trim(), description: "", completed: false });
-                  }},
-                  {
-                    text: "Crear",
-                    onPress: (description) => {
-                      addVaultTask({
-                        title: title.trim(),
-                        description: description || "",
-                        completed: false,
-                      });
-                    },
-                  },
-                ]
-              );
-            }
-          },
-        },
-      ],
-      "plain-text"
-    );
+  const handleAddTask = () => {
+    if (!newTaskTitle.trim()) {
+      Alert.alert("Error", "El título no puede estar vacío");
+      return;
+    }
+
+    addVaultTask({
+      title: newTaskTitle.trim(),
+      description: newTaskDescription.trim(),
+      completed: false,
+    });
+
+    setNewTaskTitle("");
+    setNewTaskDescription("");
+    setShowAddDialog(false);
   };
+
+  if (!isUnlocked) {
+    return null;
+  }
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: "#200D4C" }}>
@@ -170,14 +161,86 @@ export default function VaultTasksScreen() {
             />
           )}
 
+          {/* Add Button */}
           <TouchableOpacity
-            onPress={handleCreateTask}
+            onPress={() => setShowAddDialog(true)}
             className="absolute bottom-6 right-6 w-16 h-16 rounded-full items-center justify-center shadow-lg"
             style={{ backgroundColor: "#9333ea", elevation: 5 }}
           >
             <Plus color="#fff" size={32} />
           </TouchableOpacity>
         </View>
+
+        {/* Add Task Dialog */}
+        {showAddDialog && (
+          <Modal
+            visible={showAddDialog}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setShowAddDialog(false)}
+          >
+            <View className="flex-1 bg-black/70 items-center justify-center px-6">
+              <View className="bg-gray-800 rounded-2xl p-6 w-full max-w-md">
+                <View className="flex-row justify-between items-center mb-4">
+                  <Text className="text-white text-xl font-bold">Nueva Tarea Privada</Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setShowAddDialog(false);
+                      setNewTaskTitle("");
+                      setNewTaskDescription("");
+                    }}
+                  >
+                    <X color="#fff" size={24} />
+                  </TouchableOpacity>
+                </View>
+                
+                <Text className="text-gray-400 text-sm mb-2">Título *</Text>
+                <TextInput
+                  className="bg-gray-700 text-white px-4 py-3 rounded-lg mb-4 border border-gray-600"
+                  placeholder="Ej: Contraseña del banco"
+                  placeholderTextColor="#9ca3af"
+                  value={newTaskTitle}
+                  onChangeText={setNewTaskTitle}
+                  maxLength={100}
+                  autoFocus
+                />
+                
+                <Text className="text-gray-400 text-sm mb-2">Descripción (opcional)</Text>
+                <TextInput
+                  className="bg-gray-700 text-white px-4 py-3 rounded-lg mb-6 border border-gray-600"
+                  placeholder="Detalles adicionales..."
+                  placeholderTextColor="#9ca3af"
+                  value={newTaskDescription}
+                  onChangeText={setNewTaskDescription}
+                  multiline
+                  numberOfLines={3}
+                  maxLength={500}
+                  textAlignVertical="top"
+                />
+                
+                <View className="flex-row gap-3">
+                  <TouchableOpacity
+                    onPress={() => {
+                      setShowAddDialog(false);
+                      setNewTaskTitle("");
+                      setNewTaskDescription("");
+                    }}
+                    className="flex-1 bg-gray-700 py-3 rounded-lg border border-gray-600"
+                  >
+                    <Text className="text-white text-center font-semibold">Cancelar</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity
+                    onPress={handleAddTask}
+                    className="flex-1 bg-purple-600 py-3 rounded-lg"
+                  >
+                    <Text className="text-white text-center font-semibold">Crear</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Modal>
+        )}
       </Animated.View>
     </SafeAreaView>
   );
