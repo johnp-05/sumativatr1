@@ -1,5 +1,6 @@
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import { ClipboardList, Lock, Sparkles } from "lucide-react-native";
+import { TouchableOpacity, View, Text } from "react-native";
 
 export default function TabsLayout() {
   return (

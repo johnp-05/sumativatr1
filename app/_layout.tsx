@@ -14,7 +14,11 @@ export default function RootLayout() {
             options={{ 
               presentation: "modal",
               headerShown: true,
-              title: "Editar Tarea"
+              title: "Editar Tarea",
+              headerStyle: {
+                backgroundColor: "#1f2937",
+              },
+              headerTintColor: "#fff",
             }} 
           />
           <Stack.Screen 
@@ -22,13 +26,24 @@ export default function RootLayout() {
             options={{ 
               presentation: "modal",
               headerShown: true,
-              title: "Nueva Tarea"
+              title: "Nueva Tarea",
+              headerStyle: {
+                backgroundColor: "#1f2937",
+              },
+              headerTintColor: "#fff",
             }} 
           />
           <Stack.Screen 
-            name="vault/index" 
+            name="vault/tasks" 
             options={{ 
               presentation: "fullScreenModal",
+              headerShown: false
+            }} 
+          />
+          <Stack.Screen 
+            name="test-gemini" 
+            options={{ 
+              presentation: "modal",
               headerShown: false
             }} 
           />

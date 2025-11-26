@@ -1,7 +1,7 @@
-import { View, Text, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
-import { Send, Sparkles, Bot, User } from "lucide-react-native";
+import { Send, Sparkles, Bot, User, TestTube2 } from "lucide-react-native";
 import { geminiService } from "@/services/gemini-service";
 
 interface Message {
@@ -22,6 +22,36 @@ export default function ExploreScreen() {
   ]);
   const [inputText, setInputText] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const testConnection = async () => {
+    Alert.alert(
+      "🧪 Probando Gemini AI...",
+      "Verificando conexión...",
+      [{ text: "OK" }]
+    );
+
+    try {
+      const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+      if (!apiKey) {
+        Alert.alert(
+          "❌ API Key no encontrada",
+          "Por favor:\n\n1. Crea archivo .env en la raíz\n2. Añade: EXPO_PUBLIC_GEMINI_API_KEY=tu_key\n3. Obtén tu key en: https://aistudio.google.com/app/apikey\n4. Reinicia el servidor"
+        );
+        return;
+      }
+
+      const response = await geminiService.chat("Di hola en una palabra");
+      Alert.alert(
+        "✅ ¡Gemini funciona!",
+        `Respuesta: ${response}\n\nLa IA está configurada correctamente.`
+      );
+    } catch (error) {
+      Alert.alert(
+        "❌ Error de conexión",
+        error instanceof Error ? error.message : "Error desconocido"
+      );
+    }
+  };
 
   const handleSend = async () => {
     if (!inputText.trim() || loading) return;
@@ -49,7 +79,9 @@ export default function ExploreScreen() {
     } catch (error) {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: "Lo siento, hubo un error al procesar tu mensaje. Por favor, verifica tu conexión y tu API key de Gemini.",
+        text: error instanceof Error 
+          ? `❌ Error: ${error.message}` 
+          : "Lo siento, hubo un error al procesar tu mensaje.",
         isUser: false,
         timestamp: new Date(),
       };
@@ -68,14 +100,25 @@ export default function ExploreScreen() {
       >
         {/* Header */}
         <View className="px-4 py-4 border-b border-gray-800">
-          <View className="flex-row items-center">
-            <View className="w-12 h-12 bg-purple-600 rounded-full items-center justify-center mr-3">
-              <Sparkles color="#fff" size={24} />
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center">
+              <View className="w-12 h-12 bg-purple-600 rounded-full items-center justify-center mr-3">
+                <Sparkles color="#fff" size={24} />
+              </View>
+              <View>
+                <Text className="text-white text-xl font-bold">Asistente IA</Text>
+                <Text className="text-gray-400 text-sm">Powered by Gemini</Text>
+              </View>
             </View>
-            <View>
-              <Text className="text-white text-xl font-bold">Asistente IA</Text>
-              <Text className="text-gray-400 text-sm">Powered by Gemini</Text>
-            </View>
+            
+            {/* Test Button */}
+            <TouchableOpacity
+              onPress={testConnection}
+              className="bg-gray-800 px-3 py-2 rounded-lg flex-row items-center"
+            >
+              <TestTube2 color="#9333ea" size={16} />
+              <Text className="text-purple-400 text-xs ml-1 font-medium">Probar</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
