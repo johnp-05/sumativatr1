@@ -1,13 +1,16 @@
 import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 
 import { HelloWave } from '@/components/hello-wave';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Link } from 'expo-router';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function HomeScreen() {
+  const tintColor = useThemeColor({}, 'tint');
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
@@ -18,61 +21,47 @@ export default function HomeScreen() {
         />
       }>
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
+        <ThemedText type="title">¡Bienvenido!</ThemedText>
         <HelloWave />
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
 
+      <ThemedView style={styles.stepContainer}>
+        <ThemedText type="subtitle">Gestión de Tareas</ThemedText>
         <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
+          Esta aplicación te permite gestionar tus tareas de manera eficiente. Utiliza JSON Server
+          como backend y Gemini AI para sugerencias inteligentes.
         </ThemedText>
       </ThemedView>
+
       <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
+        <Link href="/(tabs)/tasks" asChild>
+          <TouchableOpacity style={[styles.featureCard, { borderColor: tintColor }]}>
+            <ThemedText type="subtitle">📋 Mis Tareas</ThemedText>
+            <ThemedText>
+              Crea, edita y elimina tareas. Marca las completadas y mantén tu lista organizada.
+            </ThemedText>
+          </TouchableOpacity>
+        </Link>
+      </ThemedView>
+
+      <ThemedView style={styles.stepContainer}>
+        <Link href="/gemini" asChild>
+          <TouchableOpacity style={[styles.featureCard, { borderColor: tintColor }]}>
+            <ThemedText type="subtitle">✨ Gemini AI</ThemedText>
+            <ThemedText>
+              Chatea con Gemini AI para obtener sugerencias y ayuda con tus tareas.
+            </ThemedText>
+          </TouchableOpacity>
+        </Link>
+      </ThemedView>
+
+      <ThemedView style={styles.stepContainer}>
+        <ThemedText type="subtitle">Características</ThemedText>
+        <ThemedText>• Validación de formularios alfanuméricos</ThemedText>
+        <ThemedText>• Integración con JSON Server (CRUD)</ThemedText>
+        <ThemedText>• Estado global con Context API</ThemedText>
+        <ThemedText>• Navegación con Expo Router</ThemedText>
+        <ThemedText>• Sugerencias con Gemini AI</ThemedText>
       </ThemedView>
     </ParallaxScrollView>
   );
@@ -87,6 +76,12 @@ const styles = StyleSheet.create({
   stepContainer: {
     gap: 8,
     marginBottom: 8,
+  },
+  featureCard: {
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    gap: 8,
   },
   reactLogo: {
     height: 178,
