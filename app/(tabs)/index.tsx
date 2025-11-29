@@ -1,7 +1,7 @@
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
 import { useTasks } from "@/context/task-context";
 import { useRouter } from "expo-router";
-import { Plus, Trash2, Edit, CheckCircle, Circle } from "lucide-react-native";
+import { Plus, Trash2, Edit, CheckCircle, Circle, ClipboardList } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TasksScreen() {
@@ -33,6 +33,7 @@ export default function TasksScreen() {
     return (
       <SafeAreaView className="flex-1 bg-gray-900 justify-center items-center">
         <ActivityIndicator size="large" color="#3b82f6" />
+        <Text className="text-gray-400 mt-4">Cargando tareas...</Text>
       </SafeAreaView>
     );
   }
@@ -42,7 +43,8 @@ export default function TasksScreen() {
       <View className="flex-1 p-4">
         {tasks.length === 0 ? (
           <View className="flex-1 justify-center items-center">
-            <Text className="text-gray-400 text-lg mb-4">No hay tareas</Text>
+            <ClipboardList color="#6b7280" size={64} />
+            <Text className="text-gray-400 text-lg mb-4 mt-4">No hay tareas</Text>
             <Text className="text-gray-500 text-center">
               Presiona el botón + para crear tu primera tarea
             </Text>

@@ -3,7 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useVault } from "@/context/vault-context";
 import { useRouter } from "expo-router";
 import { useState, useRef, useEffect } from "react";
-import { Lock, Delete } from "lucide-react-native";
+import { Lock, Delete, Shield } from "lucide-react-native";
 
 export default function VaultAccessScreen() {
   const { unlock, hasPin, isUnlocked } = useVault();
@@ -76,7 +76,7 @@ export default function VaultAccessScreen() {
   };
 
   const renderKeypad = () => {
-    const numbers = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "⌫"];
+    const numbers = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "delete"];
     
     return (
       <View className="w-full max-w-xs">
@@ -87,7 +87,7 @@ export default function VaultAccessScreen() {
                 return <View key={index} className="w-20 h-20" />;
               }
               
-              if (num === "⌫") {
+              if (num === "delete") {
                 return (
                   <TouchableOpacity
                     key={index}
@@ -126,7 +126,7 @@ export default function VaultAccessScreen() {
       >
         <View className="items-center mb-12">
           <View className="w-24 h-24 bg-purple-600 rounded-full items-center justify-center mb-4">
-            <Lock color="#fff" size={40} />
+            <Shield color="#fff" size={40} />
           </View>
           <Text className="text-white text-2xl font-bold mb-2">Bóveda Segura</Text>
           <Text className="text-gray-400 text-center">

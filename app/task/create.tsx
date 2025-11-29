@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "expo-router";
 import { useTasks } from "@/context/task-context";
 import { taskSchema } from "@/lib/schemas/task.schema";
-import { Sparkles, Save } from "lucide-react-native";
+import { Sparkles, Save, Info } from "lucide-react-native";
 import { geminiService } from "@/services/gemini-service";
 
 export default function CreateTaskScreen() {
@@ -141,9 +141,10 @@ export default function CreateTaskScreen() {
         </View>
 
         {/* Info Box */}
-        <View className="bg-blue-900/30 border border-blue-800 rounded-lg p-4 mb-6">
-          <Text className="text-blue-300 text-sm">
-            💡 Los campos deben contener solo letras, números y signos de puntuación básicos (. , ! ? ( ) -)
+        <View className="bg-blue-900/30 border border-blue-800 rounded-lg p-4 mb-6 flex-row items-start">
+          <Info color="#60a5fa" size={20} className="mt-0.5 mr-3" />
+          <Text className="text-blue-300 text-sm flex-1">
+            Los campos deben contener solo letras, números y signos de puntuación básicos (. , ! ? ( ) -)
           </Text>
         </View>
 

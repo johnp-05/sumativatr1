@@ -1,7 +1,7 @@
 import { View, Text, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useState } from "react";
-import { Send, Sparkles, Bot, User, TestTube2 } from "lucide-react-native";
+import { useState, useRef } from "react";
+import { Send, Sparkles, Bot, User, TestTube2, CheckCircle2, MessageSquare, Lightbulb, Target } from "lucide-react-native";
 import { geminiService } from "@/services/gemini-service";
 
 interface Message {
@@ -15,41 +15,55 @@ export default function ExploreScreen() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      text: "¡Hola! Soy tu asistente IA. Puedo ayudarte a organizar tus tareas, darte consejos de productividad y responder tus preguntas. ¿En qué puedo ayudarte hoy?",
+      text: "Hola! Soy tu asistente con IA Gemini. Puedo ayudarte a:\n\nOrganizar tus tareas\nDarte consejos de productividad\nResponder tus preguntas\nCrear descripciones para tus tareas\n\nEn qué puedo ayudarte hoy?",
       isUser: false,
       timestamp: new Date(),
     },
   ]);
   const [inputText, setInputText] = useState("");
   const [loading, setLoading] = useState(false);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const testConnection = async () => {
-    Alert.alert(
-      "🧪 Probando Gemini AI...",
-      "Verificando conexión...",
-      [{ text: "OK" }]
-    );
-
+    setLoading(true);
     try {
       const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+      
       if (!apiKey) {
         Alert.alert(
-          "❌ API Key no encontrada",
-          "Por favor:\n\n1. Crea archivo .env en la raíz\n2. Añade: EXPO_PUBLIC_GEMINI_API_KEY=tu_key\n3. Obtén tu key en: https://aistudio.google.com/app/apikey\n4. Reinicia el servidor"
+          "API Key no encontrada",
+          "Para configurar Gemini AI:\n\n" +
+          "1. Ve a: https://aistudio.google.com/app/apikey\n" +
+          "2. Crea una API key\n" +
+          "3. Crea un archivo .env en la raíz\n" +
+          "4. Añade: EXPO_PUBLIC_GEMINI_API_KEY=tu_key\n" +
+          "5. Reinicia: npm start",
+          [{ text: "Entendido" }]
         );
+        setLoading(false);
         return;
       }
 
-      const response = await geminiService.chat("Di hola en una palabra");
+      Alert.alert("Probando conexión", "Verificando Gemini AI...");
+      
+      const response = await geminiService.chat("Di 'Hola' en una palabra");
+      
       Alert.alert(
-        "✅ ¡Gemini funciona!",
-        `Respuesta: ${response}\n\nLa IA está configurada correctamente.`
+        "Gemini AI funciona correctamente",
+        `Respuesta: "${response}"\n\n` +
+        "La inteligencia artificial está configurada correctamente. " +
+        "Ahora puedes chatear con el asistente.",
+        [{ text: "Genial" }]
       );
     } catch (error) {
+      console.error('Error en test:', error);
       Alert.alert(
-        "❌ Error de conexión",
-        error instanceof Error ? error.message : "Error desconocido"
+        "Error de conexión",
+        error instanceof Error ? error.message : "Error desconocido",
+        [{ text: "OK" }]
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -67,24 +81,37 @@ export default function ExploreScreen() {
     setInputText("");
     setLoading(true);
 
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 100);
+
     try {
       const response = await geminiService.chat(inputText.trim());
+      
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         text: response,
         isUser: false,
         timestamp: new Date(),
       };
+      
       setMessages((prev) => [...prev, aiMessage]);
+      
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 100);
     } catch (error) {
+      console.error('Error al enviar mensaje:', error);
+      
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         text: error instanceof Error 
-          ? `❌ Error: ${error.message}` 
-          : "Lo siento, hubo un error al procesar tu mensaje.",
+          ? `Error: ${error.message}` 
+          : "Lo siento, hubo un error al procesar tu mensaje. Por favor intenta de nuevo.",
         isUser: false,
         timestamp: new Date(),
       };
+      
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setLoading(false);
@@ -111,19 +138,31 @@ export default function ExploreScreen() {
               </View>
             </View>
             
-            {/* Test Button */}
             <TouchableOpacity
               onPress={testConnection}
-              className="bg-gray-800 px-3 py-2 rounded-lg flex-row items-center"
+              disabled={loading}
+              className={`px-3 py-2 rounded-lg flex-row items-center ${
+                loading ? "bg-gray-700" : "bg-gray-800"
+              }`}
             >
-              <TestTube2 color="#9333ea" size={16} />
-              <Text className="text-purple-400 text-xs ml-1 font-medium">Probar</Text>
+              {loading ? (
+                <ActivityIndicator size="small" color="#9333ea" />
+              ) : (
+                <>
+                  <TestTube2 color="#9333ea" size={16} />
+                  <Text className="text-purple-400 text-xs ml-1 font-medium">Probar</Text>
+                </>
+              )}
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Messages */}
-        <ScrollView className="flex-1 px-4 py-4">
+        <ScrollView 
+          ref={scrollViewRef}
+          className="flex-1 px-4 py-4"
+          onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+        >
           {messages.map((message) => (
             <View
               key={message.id}
@@ -142,7 +181,7 @@ export default function ExploreScreen() {
                     : "bg-gray-800 border border-gray-700"
                 }`}
               >
-                <Text className="text-white">{message.text}</Text>
+                <Text className="text-white leading-5">{message.text}</Text>
                 <Text className="text-gray-400 text-xs mt-1">
                   {message.timestamp.toLocaleTimeString([], {
                     hour: "2-digit",
@@ -164,8 +203,9 @@ export default function ExploreScreen() {
               <View className="w-8 h-8 bg-purple-600 rounded-full items-center justify-center mr-2">
                 <Bot color="#fff" size={16} />
               </View>
-              <View className="bg-gray-800 border border-gray-700 p-3 rounded-2xl">
-                <ActivityIndicator color="#fff" />
+              <View className="bg-gray-800 border border-gray-700 p-3 rounded-2xl flex-row items-center">
+                <ActivityIndicator color="#fff" size="small" />
+                <Text className="text-white ml-2">Pensando...</Text>
               </View>
             </View>
           )}
@@ -182,6 +222,7 @@ export default function ExploreScreen() {
               onChangeText={setInputText}
               multiline
               maxLength={500}
+              editable={!loading}
             />
             <TouchableOpacity
               onPress={handleSend}
@@ -190,9 +231,16 @@ export default function ExploreScreen() {
                 inputText.trim() && !loading ? "bg-blue-600" : "bg-gray-700"
               }`}
             >
-              <Send color="#fff" size={20} />
+              {loading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Send color="#fff" size={20} />
+              )}
             </TouchableOpacity>
           </View>
+          <Text className="text-gray-500 text-xs text-center mt-2">
+            Gemini puede cometer errores. Verifica información importante.
+          </Text>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

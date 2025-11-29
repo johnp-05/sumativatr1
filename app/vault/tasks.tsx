@@ -2,7 +2,7 @@ import { View, Text, FlatList, TouchableOpacity, Alert, Animated, TextInput, Mod
 import { useVault } from "@/context/vault-context";
 import { useRouter } from "expo-router";
 import { useState, useRef, useEffect } from "react";
-import { Plus, Trash2, CheckCircle, Circle, LogOut, Lock, X } from "lucide-react-native";
+import { Plus, Trash2, CheckCircle, Circle, LogOut, Lock, X, Shield } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function VaultTasksScreen() {
@@ -35,7 +35,7 @@ export default function VaultTasksScreen() {
   }, [isUnlocked]);
 
   const handleLock = () => {
-    Alert.alert("Cerrar Bóveda", "¿Deseas cerrar la bóveda?", [
+    Alert.alert("Cerrar Bóveda", "Deseas cerrar la bóveda?", [
       { text: "Cancelar", style: "cancel" },
       {
         text: "Cerrar",
@@ -50,7 +50,7 @@ export default function VaultTasksScreen() {
   const handleDelete = (id: string, title: string) => {
     Alert.alert(
       "Eliminar tarea privada",
-      `¿Estás seguro de que quieres eliminar "${title}"?`,
+      `Estás seguro de que quieres eliminar "${title}"?`,
       [
         { text: "Cancelar", style: "cancel" },
         {
@@ -93,7 +93,7 @@ export default function VaultTasksScreen() {
         <View className="px-4 py-6 flex-row items-center justify-between border-b" style={{ borderBottomColor: "#3D2080" }}>
           <View className="flex-row items-center">
             <View className="w-12 h-12 rounded-full items-center justify-center mr-3" style={{ backgroundColor: "#3D2080" }}>
-              <Lock color="#fff" size={24} />
+              <Shield color="#fff" size={24} />
             </View>
             <View>
               <Text className="text-white text-2xl font-bold">Bóveda Segura</Text>
