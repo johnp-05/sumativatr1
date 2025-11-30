@@ -3,66 +3,74 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { useTasks } from "@/context/task-context";
-import { taskSchema } from "@/lib/schemas/task.schema";
 import { Sparkles, Save, Info } from "lucide-react-native";
 import { geminiService } from "@/services/gemini-service";
 
 export default function CreateTaskScreen() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [errors, setErrors] = useState<{ title?: string; description?: string }>({});
   const [loadingAI, setLoadingAI] = useState(false);
-  const { addTask, loading } = useTasks();
+  const [saving, setSaving] = useState(false);
+  const { addTask } = useTasks();
   const router = useRouter();
 
-  const validateForm = (): boolean => {
-    try {
-      taskSchema.parse({ title, description, completed: false });
-      setErrors({});
-      return true;
-    } catch (error: any) {
-      const fieldErrors: { title?: string; description?: string } = {};
-      error.errors.forEach((err: any) => {
-        if (err.path[0]) {
-          fieldErrors[err.path[0] as 'title' | 'description'] = err.message;
-        }
-      });
-      setErrors(fieldErrors);
-      return false;
-    }
-  };
-
   const handleSuggestDescription = async () => {
-    if (!title.trim()) {
-      Alert.alert("Error", "Primero ingresa un título para la tarea");
+    if (!title || title.trim().length < 3) {
+      Alert.alert("Error", "Primero ingresa un título para la tarea (mínimo 3 caracteres)");
       return;
     }
 
     setLoadingAI(true);
+    console.log("🤖 Generando sugerencia para:", title);
+    
     try {
       const suggestion = await geminiService.suggestTaskDescription(title);
+      console.log("✅ Sugerencia generada:", suggestion);
       setDescription(suggestion);
+      Alert.alert("¡Listo!", "Descripción generada con IA");
     } catch (error) {
-      Alert.alert("Error", "No se pudo generar la sugerencia. Verifica tu API key de Gemini.");
+      console.error("❌ Error al generar sugerencia:", error);
+      Alert.alert(
+        "Error", 
+        error instanceof Error ? error.message : "No se pudo generar la sugerencia. Verifica tu API key de Gemini."
+      );
     } finally {
       setLoadingAI(false);
     }
   };
 
   const handleSave = async () => {
-    if (!validateForm()) {
+    console.log("💾 Guardando tarea:", { title, description });
+
+    if (!title || title.trim().length < 3) {
+      Alert.alert("Error", "El título debe tener al menos 3 caracteres");
       return;
     }
 
+    setSaving(true);
+
     try {
-      await addTask({
+      const newTask = await addTask({
         title: title.trim(),
         description: description.trim(),
         completed: false,
       });
-      router.back();
+      
+      console.log("✅ Tarea guardada:", newTask);
+      
+      Alert.alert(
+        "¡Éxito!", 
+        "Tarea creada correctamente",
+        [{ text: "OK", onPress: () => router.back() }]
+      );
     } catch (error) {
-      Alert.alert("Error", "No se pudo crear la tarea");
+      console.error("❌ Error al guardar:", error);
+      Alert.alert(
+        "Error", 
+        `No se pudo crear la tarea: ${error instanceof Error ? error.message : 'Error desconocido'}`
+      );
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -71,43 +79,39 @@ export default function CreateTaskScreen() {
       <ScrollView className="flex-1 p-6">
         <Text className="text-white text-3xl font-bold mb-6">Nueva Tarea</Text>
 
-        {/* Title Input */}
+        {/* TÍTULO */}
         <View className="mb-6">
           <Text className="text-gray-300 text-sm mb-2 font-medium">
             Título <Text className="text-red-500">*</Text>
           </Text>
           <TextInput
-            className={`bg-gray-800 text-white px-4 py-3 rounded-lg border ${
-              errors.title ? "border-red-500" : "border-gray-700"
-            }`}
+            className="bg-gray-800 text-white px-4 py-3 rounded-lg border border-gray-700"
             placeholder="Ej: Estudiar para el examen"
             placeholderTextColor="#6b7280"
             value={title}
-            onChangeText={(text) => {
-              setTitle(text);
-              if (errors.title) {
-                setErrors({ ...errors, title: undefined });
-              }
-            }}
+            onChangeText={setTitle}
             maxLength={100}
+            editable={!saving && !loadingAI}
           />
-          {errors.title && (
-            <Text className="text-red-500 text-xs mt-1">{errors.title}</Text>
-          )}
           <Text className="text-gray-500 text-xs mt-1">{title.length}/100</Text>
         </View>
 
-        {/* Description Input */}
+        {/* DESCRIPCIÓN CON BOTÓN IA */}
         <View className="mb-6">
           <View className="flex-row justify-between items-center mb-2">
             <Text className="text-gray-300 text-sm font-medium">Descripción</Text>
             <TouchableOpacity
               onPress={handleSuggestDescription}
-              disabled={loadingAI}
-              className="flex-row items-center bg-purple-600 px-3 py-1 rounded-full"
+              disabled={loadingAI || saving || !title.trim()}
+              className={`flex-row items-center px-3 py-2 rounded-full ${
+                loadingAI || saving || !title.trim() ? "bg-gray-700" : "bg-purple-600"
+              }`}
             >
               {loadingAI ? (
-                <ActivityIndicator size="small" color="#fff" />
+                <>
+                  <ActivityIndicator size="small" color="#fff" />
+                  <Text className="text-white text-xs ml-2 font-medium">Generando...</Text>
+                </>
               ) : (
                 <>
                   <Sparkles color="#fff" size={14} />
@@ -117,53 +121,55 @@ export default function CreateTaskScreen() {
             </TouchableOpacity>
           </View>
           <TextInput
-            className={`bg-gray-800 text-white px-4 py-3 rounded-lg border ${
-              errors.description ? "border-red-500" : "border-gray-700"
-            }`}
-            placeholder="Descripción de la tarea (opcional)"
+            className="bg-gray-800 text-white px-4 py-3 rounded-lg border border-gray-700"
+            placeholder="Descripción (opcional)"
             placeholderTextColor="#6b7280"
             value={description}
-            onChangeText={(text) => {
-              setDescription(text);
-              if (errors.description) {
-                setErrors({ ...errors, description: undefined });
-              }
-            }}
+            onChangeText={setDescription}
             multiline
             numberOfLines={4}
             textAlignVertical="top"
             maxLength={500}
+            editable={!saving && !loadingAI}
           />
-          {errors.description && (
-            <Text className="text-red-500 text-xs mt-1">{errors.description}</Text>
-          )}
           <Text className="text-gray-500 text-xs mt-1">{description.length}/500</Text>
         </View>
 
-        {/* Info Box */}
-        <View className="bg-blue-900/30 border border-blue-800 rounded-lg p-4 mb-6 flex-row items-start">
-          <Info color="#60a5fa" size={20} className="mt-0.5 mr-3" />
-          <Text className="text-blue-300 text-sm flex-1">
-            Los campos deben contener solo letras, números y signos de puntuación básicos (. , ! ? ( ) -)
+        {/* INFO */}
+        <View className="bg-blue-900/30 border border-blue-800 rounded-lg p-4 mb-6">
+          <Text className="text-blue-300 text-sm">
+            💡 Tip: Usa el botón "Sugerir con IA" para generar una descripción automática
           </Text>
         </View>
 
-        {/* Save Button */}
+        {/* BOTÓN GUARDAR */}
         <TouchableOpacity
           onPress={handleSave}
-          disabled={loading}
-          className={`bg-blue-600 py-4 rounded-lg flex-row items-center justify-center ${
-            loading ? "opacity-50" : ""
+          disabled={saving || loadingAI}
+          className={`bg-blue-600 py-4 rounded-lg flex-row items-center justify-center mb-3 ${
+            (saving || loadingAI) ? "opacity-50" : ""
           }`}
         >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
+          {saving ? (
+            <>
+              <ActivityIndicator color="#fff" size="small" />
+              <Text className="text-white text-lg font-semibold ml-2">Guardando...</Text>
+            </>
           ) : (
             <>
               <Save color="#fff" size={20} />
               <Text className="text-white text-lg font-semibold ml-2">Guardar Tarea</Text>
             </>
           )}
+        </TouchableOpacity>
+
+        {/* BOTÓN CANCELAR */}
+        <TouchableOpacity
+          onPress={() => router.back()}
+          disabled={saving || loadingAI}
+          className="bg-gray-700 py-4 rounded-lg"
+        >
+          <Text className="text-white text-lg font-semibold text-center">Cancelar</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

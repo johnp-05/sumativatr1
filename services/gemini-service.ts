@@ -3,8 +3,6 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 const getGeminiClient = () => {
   const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
   
-  console.log('Verificando API Key...', apiKey ? 'Encontrada' : 'No encontrada');
-  
   if (!apiKey) {
     throw new Error(
       'EXPO_PUBLIC_GEMINI_API_KEY no está configurada.\n\n' +
@@ -29,11 +27,9 @@ function sanitizeInput(input: string): string {
 export const geminiService = {
   async chat(prompt: string): Promise<string> {
     try {
-      console.log('Enviando mensaje a Gemini AI...');
-      
       const genAI = getGeminiClient();
       const model = genAI.getGenerativeModel({ 
-        model: 'gemini-1.5-flash',
+        model: 'gemini-pro',
         generationConfig: {
           temperature: 0.7,
           topK: 40,
@@ -43,13 +39,9 @@ export const geminiService = {
       });
       
       const sanitizedPrompt = sanitizeInput(prompt);
-      console.log('Prompt sanitizado:', sanitizedPrompt.substring(0, 50) + '...');
-      
       const result = await model.generateContent(sanitizedPrompt);
       const response = result.response;
       const text = response.text();
-      
-      console.log('Respuesta recibida:', text.substring(0, 50) + '...');
       
       return text;
     } catch (error) {
@@ -64,22 +56,6 @@ export const geminiService = {
             '2. Genera una nueva API key\n' +
             '3. Actualiza el archivo .env\n' +
             '4. Reinicia el servidor'
-          );
-        }
-        
-        if (error.message.includes('quota')) {
-          throw new Error(
-            'Límite de uso excedido\n\n' +
-            'Has alcanzado el límite de solicitudes.\n' +
-            'Espera unos minutos e intenta de nuevo.'
-          );
-        }
-        
-        if (error.message.includes('SAFETY')) {
-          throw new Error(
-            'Contenido bloqueado por seguridad\n\n' +
-            'El mensaje fue bloqueado por políticas de seguridad.\n' +
-            'Intenta reformular tu pregunta.'
           );
         }
         
