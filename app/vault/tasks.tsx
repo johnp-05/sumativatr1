@@ -11,19 +11,11 @@ export default function VaultTasksScreen() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskDescription, setNewTaskDescription] = useState("");
-  const [isMounted, setIsMounted] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!isMounted) return;
-
     if (!isUnlocked) {
-      console.log('🔒 No está desbloqueado, redirigiendo...');
       router.replace("/(tabs)/vault");
       return;
     }
@@ -40,30 +32,20 @@ export default function VaultTasksScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-  }, [isUnlocked, isMounted]);
+  }, [isUnlocked]);
 
   const handleLock = () => {
-    console.log('🔒 === CERRANDO BÓVEDA ===');
-    
     Alert.alert(
-      "Cerrar Bóveda", 
+      "🔒 Cerrar Bóveda", 
       "¿Deseas cerrar la bóveda?", 
       [
-        { 
-          text: "Cancelar", 
-          style: "cancel",
-          onPress: () => console.log('❌ Cierre cancelado')
-        },
+        { text: "Cancelar", style: "cancel" },
         {
           text: "Cerrar",
+          style: "destructive",
           onPress: () => {
-            console.log('✅ Usuario confirmó cierre');
             lock();
-            console.log('🔒 Bóveda cerrada, redirigiendo...');
-            
-            setTimeout(() => {
-              router.replace("/(tabs)/vault");
-            }, 100);
+            router.replace("/(tabs)/vault");
           },
         },
       ]
@@ -71,26 +53,17 @@ export default function VaultTasksScreen() {
   };
 
   const handleDelete = (id: string, title: string) => {
-    console.log('🗑️ === ELIMINANDO TAREA DE BÓVEDA ===');
-    console.log('ID:', id);
-    console.log('Título:', title);
-    
     Alert.alert(
-      "Eliminar tarea privada",
-      `¿Eliminar "${title}"?`,
+      "🗑️ Eliminar tarea privada",
+      `¿Estás seguro de que quieres eliminar "${title}"?`,
       [
-        { 
-          text: "Cancelar", 
-          style: "cancel",
-          onPress: () => console.log('❌ Eliminación cancelada')
-        },
+        { text: "Cancelar", style: "cancel" },
         {
           text: "Eliminar",
           style: "destructive",
           onPress: () => {
-            console.log('✅ Usuario confirmó eliminación');
             deleteVaultTask(id);
-            console.log('✅ Tarea eliminada de bóveda');
+            Alert.alert("✅ Eliminada", "Tarea privada eliminada");
           },
         },
       ]
@@ -103,8 +76,6 @@ export default function VaultTasksScreen() {
       return;
     }
 
-    console.log("➕ Agregando tarea a bóveda:", newTaskTitle);
-    
     addVaultTask({
       title: newTaskTitle.trim(),
       description: newTaskDescription.trim(),
@@ -114,11 +85,10 @@ export default function VaultTasksScreen() {
     setNewTaskTitle("");
     setNewTaskDescription("");
     setShowAddDialog(false);
-    
-    console.log("✅ Tarea agregada a bóveda");
+    Alert.alert("✅ Creada", "Tarea privada agregada");
   };
 
-  if (!isMounted || !isUnlocked) {
+  if (!isUnlocked) {
     return null;
   }
 
@@ -135,17 +105,16 @@ export default function VaultTasksScreen() {
               <Shield color="#fff" size={24} />
             </View>
             <View>
-              <Text className="text-white text-2xl font-bold">Bóveda Segura</Text>
+              <Text className="text-white text-2xl font-bold">🔒 Bóveda Segura</Text>
               <Text className="text-gray-400 text-sm">{vaultTasks.length} tareas privadas</Text>
             </View>
           </View>
           <TouchableOpacity 
             onPress={handleLock} 
-            className="p-3 rounded-lg"
-            style={{ backgroundColor: "#3D2080" }}
-            activeOpacity={0.7}
+            className="bg-red-600 px-4 py-2 rounded-full flex-row items-center"
           >
-            <LogOut color="#ef4444" size={24} />
+            <LogOut color="#fff" size={18} />
+            <Text className="text-white font-bold ml-1">Cerrar</Text>
           </TouchableOpacity>
         </View>
 
@@ -164,18 +133,11 @@ export default function VaultTasksScreen() {
               data={vaultTasks}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
-                <View 
-                  className="rounded-xl p-4 mb-3" 
-                  style={{ backgroundColor: "#2D1560" }}
-                >
+                <View className="rounded-xl p-4 mb-3" style={{ backgroundColor: "#2D1560" }}>
                   <View className="flex-row items-start">
                     <TouchableOpacity
-                      onPress={() => {
-                        console.log("✓ Toggle tarea bóveda:", item.id);
-                        toggleVaultTaskComplete(item.id);
-                      }}
+                      onPress={() => toggleVaultTaskComplete(item.id)}
                       className="mr-3 mt-1"
-                      activeOpacity={0.7}
                     >
                       {item.completed ? (
                         <CheckCircle color="#10b981" size={24} />
@@ -202,11 +164,9 @@ export default function VaultTasksScreen() {
 
                     <TouchableOpacity
                       onPress={() => handleDelete(item.id, item.title)}
-                      className="p-2 rounded-lg"
-                      style={{ backgroundColor: "#3D2080" }}
-                      activeOpacity={0.7}
+                      className="p-2 bg-red-600 rounded-lg"
                     >
-                      <Trash2 color="#ef4444" size={20} />
+                      <Trash2 color="#fff" size={18} />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -216,13 +176,9 @@ export default function VaultTasksScreen() {
 
           {/* Add Button */}
           <TouchableOpacity
-            onPress={() => {
-              console.log("➕ Abriendo diálogo de nueva tarea");
-              setShowAddDialog(true);
-            }}
+            onPress={() => setShowAddDialog(true)}
             className="absolute bottom-6 right-6 w-16 h-16 rounded-full items-center justify-center shadow-lg"
             style={{ backgroundColor: "#9333ea", elevation: 5 }}
-            activeOpacity={0.8}
           >
             <Plus color="#fff" size={32} />
           </TouchableOpacity>
@@ -233,32 +189,27 @@ export default function VaultTasksScreen() {
           visible={showAddDialog}
           transparent
           animationType="fade"
-          onRequestClose={() => {
-            console.log("❌ Cerrando diálogo");
-            setShowAddDialog(false);
-            setNewTaskTitle("");
-            setNewTaskDescription("");
-          }}
+          onRequestClose={() => setShowAddDialog(false)}
         >
-          <View className="flex-1 bg-black/70 items-center justify-center px-6">
+          <View className="flex-1 bg-black/80 items-center justify-center px-6">
             <View className="bg-gray-800 rounded-2xl p-6 w-full max-w-md">
               <View className="flex-row justify-between items-center mb-4">
-                <Text className="text-white text-xl font-bold">Nueva Tarea Privada</Text>
+                <Text className="text-white text-xl font-bold">Nueva Tarea Privada 🔒</Text>
                 <TouchableOpacity
                   onPress={() => {
                     setShowAddDialog(false);
                     setNewTaskTitle("");
                     setNewTaskDescription("");
                   }}
-                  activeOpacity={0.7}
+                  className="bg-gray-700 p-2 rounded-full"
                 >
-                  <X color="#fff" size={24} />
+                  <X color="#fff" size={20} />
                 </TouchableOpacity>
               </View>
               
               <Text className="text-gray-400 text-sm mb-2">Título *</Text>
               <TextInput
-                className="bg-gray-700 text-white px-4 py-3 rounded-lg mb-4 border border-gray-600"
+                className="bg-gray-700 text-white px-4 py-3 rounded-lg mb-4 border border-purple-600"
                 placeholder="Ej: Contraseña del banco"
                 placeholderTextColor="#9ca3af"
                 value={newTaskTitle}
@@ -269,7 +220,7 @@ export default function VaultTasksScreen() {
               
               <Text className="text-gray-400 text-sm mb-2">Descripción (opcional)</Text>
               <TextInput
-                className="bg-gray-700 text-white px-4 py-3 rounded-lg mb-6 border border-gray-600"
+                className="bg-gray-700 text-white px-4 py-3 rounded-lg mb-6 border border-purple-600"
                 placeholder="Detalles adicionales..."
                 placeholderTextColor="#9ca3af"
                 value={newTaskDescription}
@@ -287,8 +238,7 @@ export default function VaultTasksScreen() {
                     setNewTaskTitle("");
                     setNewTaskDescription("");
                   }}
-                  className="flex-1 bg-gray-700 py-3 rounded-lg border border-gray-600"
-                  activeOpacity={0.7}
+                  className="flex-1 bg-gray-700 py-3 rounded-lg"
                 >
                   <Text className="text-white text-center font-semibold">Cancelar</Text>
                 </TouchableOpacity>
@@ -296,11 +246,8 @@ export default function VaultTasksScreen() {
                 <TouchableOpacity
                   onPress={handleAddTask}
                   className="flex-1 bg-purple-600 py-3 rounded-lg"
-                  disabled={!newTaskTitle.trim()}
-                  style={{ opacity: newTaskTitle.trim() ? 1 : 0.5 }}
-                  activeOpacity={0.7}
                 >
-                  <Text className="text-white text-center font-semibold">Crear</Text>
+                  <Text className="text-white text-center font-bold">Crear</Text>
                 </TouchableOpacity>
               </View>
             </View>

@@ -3,7 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { useTasks } from "@/context/task-context";
-import { Sparkles, Save, Lightbulb } from "lucide-react-native";
+import { Sparkles, Save } from "lucide-react-native";
 import { geminiService } from "@/services/gemini-service";
 
 export default function CreateTaskScreen() {
@@ -21,48 +21,17 @@ export default function CreateTaskScreen() {
     }
 
     setLoadingAI(true);
-    console.log('🤖 === INICIANDO SUGERENCIA DE IA ===');
-    console.log('Título:', title);
-    
-    const timeoutId = setTimeout(() => {
-      console.log('⏰ Timeout de 20 segundos alcanzado');
-      setLoadingAI(false);
-      Alert.alert(
-        "Timeout", 
-        "La IA está tardando mucho.\n\nVerifica:\n1. Tu conexión a internet\n2. Que la API key sea válida\n3. Intenta de nuevo"
-      );
-    }, 20000);
     
     try {
       const suggestion = await geminiService.suggestTaskDescription(title);
-      clearTimeout(timeoutId);
-      
-      console.log('✅ Sugerencia recibida:', suggestion);
       setDescription(suggestion);
-      Alert.alert("Listo", "Descripción generada con IA");
+      Alert.alert("✅ ¡Listo!", "Descripción generada con IA");
     } catch (error) {
-      clearTimeout(timeoutId);
-      console.error('❌ === ERROR EN SUGERENCIA ===');
-      console.error(error);
-      
-      let errorMessage = "No se pudo generar la sugerencia.";
-      
-      if (error instanceof Error) {
-        console.error('Tipo:', error.name);
-        console.error('Mensaje:', error.message);
-        
-        if (error.message.includes('GEMINI NO CONFIGURADO')) {
-          errorMessage = error.message;
-        } else if (error.message.includes('API KEY INVÁLIDA')) {
-          errorMessage = error.message;
-        } else if (error.message.includes('ERROR DE RED')) {
-          errorMessage = error.message;
-        } else {
-          errorMessage = `Error: ${error.message}\n\nRevisa la consola para más detalles.`;
-        }
-      }
-      
-      Alert.alert("Error de IA", errorMessage);
+      console.error("Error IA:", error);
+      Alert.alert(
+        "❌ Error de IA", 
+        error instanceof Error ? error.message : "Verifica tu API key de Gemini"
+      );
     } finally {
       setLoadingAI(false);
     }
@@ -75,26 +44,26 @@ export default function CreateTaskScreen() {
     }
 
     setSaving(true);
-    console.log('💾 Guardando tarea:', { title, description });
 
     try {
-      const newTask = await addTask({
+      await addTask({
         title: title.trim(),
         description: description.trim(),
         completed: false,
       });
       
-      console.log('✅ Tarea guardada:', newTask);
-      router.back();
+      Alert.alert(
+        "✅ ¡Éxito!", 
+        "Tarea creada correctamente",
+        [{ text: "OK", onPress: () => router.back() }]
+      );
     } catch (error) {
-      console.error('❌ Error al guardar:', error);
+      console.error("Error al guardar:", error);
       Alert.alert("Error", "No se pudo crear la tarea");
     } finally {
       setSaving(false);
     }
   };
-
-  const isDisabled = saving || loadingAI;
 
   return (
     <SafeAreaView className="flex-1 bg-gray-900">
@@ -113,7 +82,7 @@ export default function CreateTaskScreen() {
             value={title}
             onChangeText={setTitle}
             maxLength={100}
-            editable={!isDisabled}
+            editable={!saving && !loadingAI}
           />
           <Text className="text-gray-500 text-xs mt-1">{title.length}/100</Text>
         </View>
@@ -124,20 +93,20 @@ export default function CreateTaskScreen() {
             <Text className="text-gray-300 text-sm font-medium">Descripción</Text>
             <TouchableOpacity
               onPress={handleSuggestDescription}
-              disabled={isDisabled || !title.trim() || title.trim().length < 3}
-              className={`flex-row items-center px-3 py-2 rounded-full ${
-                isDisabled || !title.trim() || title.trim().length < 3 ? "bg-gray-700" : "bg-purple-600"
+              disabled={loadingAI || saving || !title.trim()}
+              className={`flex-row items-center px-4 py-2 rounded-full ${
+                loadingAI || saving || !title.trim() ? "bg-gray-700" : "bg-purple-600"
               }`}
             >
               {loadingAI ? (
                 <>
                   <ActivityIndicator size="small" color="#fff" />
-                  <Text className="text-white text-xs ml-2 font-medium">Generando...</Text>
+                  <Text className="text-white text-sm ml-2 font-bold">Generando...</Text>
                 </>
               ) : (
                 <>
-                  <Sparkles color="#fff" size={14} />
-                  <Text className="text-white text-xs ml-1 font-medium">Sugerir con IA</Text>
+                  <Sparkles color="#fff" size={16} />
+                  <Text className="text-white text-sm ml-2 font-bold">Sugerir con IA</Text>
                 </>
               )}
             </TouchableOpacity>
@@ -152,45 +121,43 @@ export default function CreateTaskScreen() {
             numberOfLines={4}
             textAlignVertical="top"
             maxLength={500}
-            editable={!isDisabled}
+            editable={!saving && !loadingAI}
           />
           <Text className="text-gray-500 text-xs mt-1">{description.length}/500</Text>
         </View>
 
         {/* INFO */}
-        <View className="bg-blue-900/30 border border-blue-800 rounded-lg p-4 mb-6 flex-row items-start">
-          <Lightbulb color="#93c5fd" size={20} />
-          <Text className="text-blue-300 text-sm ml-2 flex-1">
-            Tip: Usa el botón "Sugerir con IA" para generar una descripción automática basada en el título
+        <View className="bg-purple-900/30 border border-purple-700 rounded-lg p-4 mb-6">
+          <Text className="text-purple-300 text-sm">
+            💡 <Text className="font-bold">Tip:</Text> Usa "Sugerir con IA" para generar una descripción automática
           </Text>
         </View>
 
-        {/* BOTÓN GUARDAR */}
+        {/* BOTONES */}
         <TouchableOpacity
           onPress={handleSave}
-          disabled={isDisabled || !title.trim() || title.trim().length < 3}
+          disabled={saving || loadingAI}
           className={`bg-blue-600 py-4 rounded-lg flex-row items-center justify-center mb-3 ${
-            (isDisabled || !title.trim() || title.trim().length < 3) ? "opacity-50" : ""
+            (saving || loadingAI) ? "opacity-50" : ""
           }`}
         >
           {saving ? (
             <>
               <ActivityIndicator color="#fff" size="small" />
-              <Text className="text-white text-lg font-semibold ml-2">Guardando...</Text>
+              <Text className="text-white text-lg font-bold ml-2">Guardando...</Text>
             </>
           ) : (
             <>
               <Save color="#fff" size={20} />
-              <Text className="text-white text-lg font-semibold ml-2">Guardar Tarea</Text>
+              <Text className="text-white text-lg font-bold ml-2">Guardar Tarea</Text>
             </>
           )}
         </TouchableOpacity>
 
-        {/* BOTÓN CANCELAR */}
         <TouchableOpacity
           onPress={() => router.back()}
-          disabled={isDisabled}
-          className={`bg-gray-700 py-4 rounded-lg ${isDisabled ? "opacity-50" : ""}`}
+          disabled={saving || loadingAI}
+          className="bg-gray-700 py-4 rounded-lg"
         >
           <Text className="text-white text-lg font-semibold text-center">Cancelar</Text>
         </TouchableOpacity>
