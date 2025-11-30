@@ -3,8 +3,8 @@
     {
       "id": 1,
       "title": "Tarea de ejemplo",
-      "description": "Esta es una tarea de ejemplo para demostrar la funcionalidad",
-      "completed": false,
+      "description": "holaaaas.",
+      "completed": true,
       "createdAt": "2024-01-01T00:00:00.000Z"
     },
     {
@@ -20,6 +20,13 @@
       "completed": false,
       "createdAt": "2025-11-30T02:27:30.525Z",
       "id": 3
+    },
+    {
+      "title": "Pasear al perro",
+      "description": "",
+      "completed": false,
+      "createdAt": "2025-11-30T02:51:19.357Z",
+      "id": 4
     }
   ]
 }

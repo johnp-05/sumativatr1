@@ -1,7 +1,7 @@
 import { View, Text, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState, useRef } from "react";
-import { Send, Sparkles, Bot, User, TestTube2, CheckCircle2, MessageSquare, Lightbulb, Target } from "lucide-react-native";
+import { Send, Sparkles, Bot, User, TestTube2 } from "lucide-react-native";
 import { geminiService } from "@/services/gemini-service";
 
 interface Message {
@@ -15,7 +15,7 @@ export default function ExploreScreen() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      text: "Hola! Soy tu asistente con IA Gemini. Puedo ayudarte a:\n\nOrganizar tus tareas\nDarte consejos de productividad\nResponder tus preguntas\nCrear descripciones para tus tareas\n\nEn qué puedo ayudarte hoy?",
+      text: "Hola! Soy tu asistente con IA Gemini. Puedo ayudarte a:\n\n- Organizar tus tareas\n- Darte consejos de productividad\n- Responder tus preguntas\n- Crear descripciones para tus tareas\n\n¿En qué puedo ayudarte hoy?",
       isUser: false,
       timestamp: new Date(),
     },
@@ -26,8 +26,11 @@ export default function ExploreScreen() {
 
   const testConnection = async () => {
     setLoading(true);
+    console.log('🧪 === PRUEBA DE CONEXIÓN GEMINI ===');
+    
     try {
       const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+      console.log('API Key presente:', apiKey ? 'SÍ' : 'NO');
       
       if (!apiKey) {
         Alert.alert(
@@ -44,24 +47,25 @@ export default function ExploreScreen() {
         return;
       }
 
-      Alert.alert("Probando conexión", "Verificando Gemini AI...");
+      Alert.alert("Probando", "Verificando conexión con Gemini AI...");
       
-      const response = await geminiService.chat("Di 'Hola' en una palabra");
+      const response = await geminiService.chat("Di 'Hola' en una sola palabra");
+      console.log('✅ Respuesta de prueba:', response);
       
       Alert.alert(
-        "Gemini AI funciona correctamente",
-        `Respuesta: "${response}"\n\n` +
-        "La inteligencia artificial está configurada correctamente. " +
-        "Ahora puedes chatear con el asistente.",
+        "Funciona correctamente",
+        `Respuesta: "${response}"\n\nGemini AI está configurado correctamente.`,
         [{ text: "Genial" }]
       );
     } catch (error) {
-      console.error('Error en test:', error);
-      Alert.alert(
-        "Error de conexión",
-        error instanceof Error ? error.message : "Error desconocido",
-        [{ text: "OK" }]
-      );
+      console.error('❌ Error en prueba:', error);
+      
+      let errorMsg = "Error desconocido";
+      if (error instanceof Error) {
+        errorMsg = error.message;
+      }
+      
+      Alert.alert("Error", errorMsg, [{ text: "OK" }]);
     } finally {
       setLoading(false);
     }
@@ -77,6 +81,7 @@ export default function ExploreScreen() {
       timestamp: new Date(),
     };
 
+    console.log('💬 Usuario envió:', userMessage.text);
     setMessages((prev) => [...prev, userMessage]);
     setInputText("");
     setLoading(true);
@@ -87,6 +92,7 @@ export default function ExploreScreen() {
 
     try {
       const response = await geminiService.chat(inputText.trim());
+      console.log('✅ IA respondió:', response.substring(0, 50) + '...');
       
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -101,13 +107,17 @@ export default function ExploreScreen() {
         scrollViewRef.current?.scrollToEnd({ animated: true });
       }, 100);
     } catch (error) {
-      console.error('Error al enviar mensaje:', error);
+      console.error('❌ Error al enviar mensaje:', error);
+      
+      let errorText = "Lo siento, hubo un error. Por favor intenta de nuevo.";
+      
+      if (error instanceof Error) {
+        errorText = error.message;
+      }
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: error instanceof Error 
-          ? `Error: ${error.message}` 
-          : "Lo siento, hubo un error al procesar tu mensaje. Por favor intenta de nuevo.",
+        text: `Error: ${errorText}`,
         isUser: false,
         timestamp: new Date(),
       };
