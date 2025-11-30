@@ -11,10 +11,17 @@ export default function VaultTasksScreen() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskDescription, setNewTaskDescription] = useState("");
+  const [isMounted, setIsMounted] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
   useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+
     if (!isUnlocked) {
       router.replace("/(tabs)/vault");
       return;
@@ -32,10 +39,10 @@ export default function VaultTasksScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-  }, [isUnlocked]);
+  }, [isUnlocked, isMounted]);
 
   const handleLock = () => {
-    Alert.alert("Cerrar Bóveda", "Deseas cerrar la bóveda?", [
+    Alert.alert("Cerrar Bóveda", "¿Deseas cerrar la bóveda?", [
       { text: "Cancelar", style: "cancel" },
       {
         text: "Cerrar",
@@ -50,7 +57,7 @@ export default function VaultTasksScreen() {
   const handleDelete = (id: string, title: string) => {
     Alert.alert(
       "Eliminar tarea privada",
-      `Estás seguro de que quieres eliminar "${title}"?`,
+      `¿Estás seguro de que quieres eliminar "${title}"?`,
       [
         { text: "Cancelar", style: "cancel" },
         {
@@ -79,7 +86,7 @@ export default function VaultTasksScreen() {
     setShowAddDialog(false);
   };
 
-  if (!isUnlocked) {
+  if (!isMounted || !isUnlocked) {
     return null;
   }
 

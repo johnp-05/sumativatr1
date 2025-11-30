@@ -6,6 +6,20 @@
       "description": "Esta es una tarea de ejemplo para demostrar la funcionalidad",
       "completed": false,
       "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "title": "Prueba después de hacer público",
+      "description": "Test",
+      "completed": false,
+      "createdAt": "2024-11-29T00:00:00.000Z",
+      "id": 2
+    },
+    {
+      "title": "hacer quimica.",
+      "description": "hacer fisica.",
+      "completed": false,
+      "createdAt": "2025-11-30T02:27:30.525Z",
+      "id": 3
     }
   ]
 }
