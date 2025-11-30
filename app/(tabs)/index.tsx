@@ -9,24 +9,47 @@ export default function TasksScreen() {
   const router = useRouter();
 
   const handleDelete = (id: number, title: string) => {
+    console.log('🗑️ BOTÓN ELIMINAR PRESIONADO - ID:', id, 'Título:', title);
+    
     Alert.alert(
-      "Eliminar tarea",
+      "🗑️ Eliminar tarea",
       `¿Estás seguro de que quieres eliminar "${title}"?`,
       [
-        { text: "Cancelar", style: "cancel" },
+        { 
+          text: "❌ Cancelar", 
+          style: "cancel",
+          onPress: () => console.log('Eliminación cancelada')
+        },
         {
-          text: "Eliminar",
+          text: "✅ Eliminar",
           style: "destructive",
           onPress: async () => {
+            console.log('🔴 USUARIO CONFIRMÓ ELIMINACIÓN');
             try {
+              console.log('⏳ Llamando a deleteTask...');
               await deleteTask(id);
+              console.log('✅ deleteTask completado exitosamente');
+              Alert.alert("✅ Éxito", "Tarea eliminada correctamente");
             } catch (error) {
-              Alert.alert("Error", "No se pudo eliminar la tarea");
+              console.error("❌ ERROR CAPTURADO en handleDelete:", error);
+              Alert.alert(
+                "❌ Error", 
+                error instanceof Error ? error.message : "No se pudo eliminar la tarea. Verifica que el servidor esté corriendo."
+              );
             }
           },
         },
       ]
     );
+  };
+
+  const handleToggleComplete = async (id: number) => {
+    try {
+      await toggleTaskComplete(id);
+    } catch (error) {
+      console.error("Error al marcar tarea:", error);
+      Alert.alert("Error", "No se pudo actualizar la tarea");
+    }
   };
 
   if (loading && tasks.length === 0) {
@@ -60,7 +83,7 @@ export default function TasksScreen() {
               >
                 <View className="flex-row items-start">
                   <TouchableOpacity
-                    onPress={() => toggleTaskComplete(item.id)}
+                    onPress={() => handleToggleComplete(item.id)}
                     className="mr-3 mt-1"
                   >
                     {item.completed ? (

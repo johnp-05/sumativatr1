@@ -3,7 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useVault } from "@/context/vault-context";
 import { useRouter } from "expo-router";
 import { useState, useRef, useEffect } from "react";
-import { Lock, Delete, Shield } from "lucide-react-native";
+import { Delete, Shield } from "lucide-react-native";
 
 export default function VaultAccessScreen() {
   const { unlock, hasPin, isUnlocked } = useVault();
@@ -46,9 +46,11 @@ export default function VaultAccessScreen() {
         setTimeout(() => {
           const success = unlock(newPin);
           if (!success) {
-            setError("PIN incorrecto");
+            setError("❌ PIN incorrecto");
             shake();
             setPin("");
+          } else {
+            setError("✅ Acceso concedido");
           }
         }, 100);
       }
@@ -56,8 +58,10 @@ export default function VaultAccessScreen() {
   };
 
   const handleDelete = () => {
-    setPin(pin.slice(0, -1));
-    setError("");
+    if (pin.length > 0) {
+      setPin(pin.slice(0, -1));
+      setError("");
+    }
   };
 
   const renderPinDots = () => {
@@ -92,7 +96,7 @@ export default function VaultAccessScreen() {
                   <TouchableOpacity
                     key={index}
                     onPress={handleDelete}
-                    className="w-20 h-20 bg-gray-700 rounded-full items-center justify-center"
+                    className="w-20 h-20 bg-gray-700 rounded-full items-center justify-center active:bg-red-700"
                   >
                     <Delete color="#fff" size={28} />
                   </TouchableOpacity>
@@ -103,9 +107,9 @@ export default function VaultAccessScreen() {
                 <TouchableOpacity
                   key={index}
                   onPress={() => handleNumberPress(num)}
-                  className="w-20 h-20 bg-gray-700 rounded-full items-center justify-center active:bg-gray-600"
+                  className="w-20 h-20 bg-gray-700 rounded-full items-center justify-center active:bg-purple-600"
                 >
-                  <Text className="text-white text-2xl font-semibold">{num}</Text>
+                  <Text className="text-white text-2xl font-bold">{num}</Text>
                 </TouchableOpacity>
               );
             })}
@@ -128,7 +132,7 @@ export default function VaultAccessScreen() {
           <View className="w-24 h-24 bg-purple-600 rounded-full items-center justify-center mb-4">
             <Shield color="#fff" size={40} />
           </View>
-          <Text className="text-white text-2xl font-bold mb-2">Bóveda Segura</Text>
+          <Text className="text-white text-2xl font-bold mb-2">🔒 Bóveda Segura</Text>
           <Text className="text-gray-400 text-center">
             {hasPin ? "Ingresa tu PIN de 6 dígitos" : "Crea un PIN de 6 dígitos"}
           </Text>
@@ -137,10 +141,20 @@ export default function VaultAccessScreen() {
         {renderPinDots()}
 
         {error && (
-          <Text className="text-red-500 mb-4 text-center">{error}</Text>
+          <Text className={`mb-6 text-center font-bold ${
+            error.includes("✅") ? "text-green-500" : "text-red-500"
+          }`}>
+            {error}
+          </Text>
         )}
 
         {renderKeypad()}
+
+        <Text className="text-gray-500 text-xs text-center mt-8">
+          {hasPin 
+            ? "Tu información está protegida" 
+            : "Este PIN protegerá tus tareas privadas"}
+        </Text>
       </Animated.View>
     </SafeAreaView>
   );
