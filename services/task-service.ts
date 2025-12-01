@@ -13,7 +13,7 @@ const getApiUrl = () => {
   // En producción o web, usa la URL completa
   // En desarrollo, puedes cambiar esto por tu IP local
   // Ejemplo: return 'http://192.168.1.100:3001';
-  return 'http://localhost:3001';
+  return 'https://special-space-guacamole-g465xp9vxqv9cw7jq-3001.app.github.dev';
 };
 
 const API_BASE_URL = getApiUrl();
