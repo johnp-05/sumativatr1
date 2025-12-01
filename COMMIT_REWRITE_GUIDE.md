@@ -12,12 +12,13 @@ Esta guía te ayudará a reescribir los mensajes de commits del repositorio usan
 | 🎨 | style | Cambios de estilo (no funcionales) |
 | 🧪 | test | Nuevas pruebas o actualizaciones |
 | 📚 | docs | Documentación |
-| 🔥 | chore | Eliminaciones, limpieza |
+| 🔥 | remove | Eliminación de código o archivos |
 | 🚀 | perf | Mejora de rendimiento |
 | 🔧 | chore | Configuración o mantenimiento |
 | 📦 | build | Empaquetado o dependencias |
 | 🚨 | lint | Correcciones de linter |
 | 💄 | ui | Cambios en la interfaz de usuario |
+| 🧹 | cleanup | Limpieza general de código o dependencias |
 
 ---
 
@@ -75,7 +76,9 @@ git rebase -i 4ac3454
 git push --force origin copilot/rewrite-commit-messages
 ```
 
-### Opción 2: Script Automatizado
+### Opción 2: Script Automatizado (Alternativa)
+
+> ⚠️ **Nota**: `git filter-branch` está deprecado. Para proyectos nuevos, considera usar `git filter-repo`. Este script se proporciona como referencia.
 
 Crea y ejecuta este script en tu máquina local:
 
@@ -86,6 +89,9 @@ Crea y ejecuta este script en tu máquina local:
 # ADVERTENCIA: Esto reescribirá el historial. Úsalo con cuidado.
 
 # Guarda esto como rewrite-commits.sh y ejecuta: bash rewrite-commits.sh
+
+# Configura el commit inicial desde donde empezar
+START_COMMIT="05ff065"
 
 git filter-branch -f --msg-filter '
 case "$GIT_COMMIT" in
@@ -120,7 +126,7 @@ case "$GIT_COMMIT" in
     cat
     ;;
 esac
-' -- 05ff065^..HEAD
+' -- ${START_COMMIT}^..HEAD
 
 # Después del script, ejecuta:
 # git push --force origin copilot/rewrite-commit-messages
@@ -147,6 +153,7 @@ esac
 
 Los commits que necesitan mejores mensajes son aquellos con nombres poco descriptivos:
 - `holaa`, `lol`, `xddd`, `homero`, `POM`, `LOL QMAL XDD`
+- `lol q mal`, `tratar de corregir errores`, `volver a tratar de corregir`
 
 Los commits que ya tienen buenos mensajes y NO necesitan cambios:
 - `🧹 Limpieza: Dependencias reinstaladas y cachés purgadas`
