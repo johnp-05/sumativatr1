@@ -35,17 +35,17 @@ export const geminiService = {
     try {
       const genAI = getGeminiClient();
       
-      // Intentar primero con gemini-1.5-flash
-      let modelName = 'gemini-2.0-flash';
+      // Usar gemini-1.5-flash que es más estable
+      const modelName = 'gemini-1.5-flash';
       console.log('📡 Usando modelo:', modelName);
       
       const model = genAI.getGenerativeModel({ 
         model: modelName,
         generationConfig: {
-          temperature: 0.9,
+          temperature: 0.7,
           topK: 40,
           topP: 0.95,
-          maxOutputTokens: 2048,
+          maxOutputTokens: 1024,
         },
       });
       
@@ -72,58 +72,59 @@ export const geminiService = {
         const errorMsg = error.message.toLowerCase();
         
         // Error de API Key
-        if (errorMsg.includes('api key') || errorMsg.includes('api_key')) {
+        if (errorMsg.includes('api key') || errorMsg.includes('api_key') || errorMsg.includes('invalid')) {
           throw new Error(
-            'API KEY INVÁLIDA\n\n' +
-            'Tu API key no funciona o expiró.\n\n' +
+            '❌ API KEY INVÁLIDA\n\n' +
+            'Tu API key no funciona.\n\n' +
             'Solución:\n' +
             '1. Ve a: https://aistudio.google.com/app/apikey\n' +
-            '2. Borra la key anterior si existe\n' +
-            '3. Crea una NUEVA key\n' +
-            '4. Cópiala COMPLETA\n' +
-            '5. Pégala en .env\n' +
-            '6. Reinicia la app'
+            '2. Crea una NUEVA key\n' +
+            '3. Cópiala completa (empieza con AIzaSy...)\n' +
+            '4. En .env pon: EXPO_PUBLIC_GEMINI_API_KEY=tu_key\n' +
+            '5. Reinicia: npm start\n\n' +
+            'Error original: ' + error.message
           );
         }
         
         // Error de modelo
         if (errorMsg.includes('model') || errorMsg.includes('not found')) {
           throw new Error(
-            'MODELO NO DISPONIBLE\n\n' +
-            'El modelo de IA no está disponible.\n\n' +
-            'Esto puede ser temporal. Intenta:\n' +
-            '1. Esperar unos minutos\n' +
-            '2. Intentar de nuevo\n' +
-            '3. Verificar tu API key'
+            '❌ MODELO NO DISPONIBLE\n\n' +
+            'Probando con modelo alternativo...\n\n' +
+            'Si persiste:\n' +
+            '1. Verifica tu API key\n' +
+            '2. Revisa que tu cuenta de Google AI tenga acceso\n' +
+            '3. Intenta en unos minutos\n\n' +
+            'Error: ' + error.message
           );
         }
         
         // Error de red
         if (errorMsg.includes('fetch') || errorMsg.includes('network') || errorMsg.includes('failed')) {
           throw new Error(
-            'ERROR DE RED\n\n' +
+            '❌ ERROR DE CONEXIÓN\n\n' +
             'No se puede conectar a Gemini.\n\n' +
             'Verifica:\n' +
-            '1. Conexión a internet\n' +
-            '2. ¿Estás usando VPN? Desactívala\n' +
-            '3. ¿Estás en China/país con restricciones?\n' +
-            '4. Intenta con datos móviles'
+            '1. Tu conexión a internet\n' +
+            '2. Desactiva VPN si usas\n' +
+            '3. Intenta con otra red\n\n' +
+            'Error: ' + error.message
           );
         }
         
         // Error de quota
-        if (errorMsg.includes('quota') || errorMsg.includes('limit')) {
+        if (errorMsg.includes('quota') || errorMsg.includes('limit') || errorMsg.includes('rate')) {
           throw new Error(
-            'LÍMITE EXCEDIDO\n\n' +
-            'Has alcanzado el límite de la API.\n\n' +
+            '❌ LÍMITE EXCEDIDO\n\n' +
+            'Has usado demasiadas peticiones.\n\n' +
             'Solución:\n' +
-            '1. Espera unos minutos\n' +
-            '2. O crea una nueva API key'
+            '1. Espera 1 minuto\n' +
+            '2. O crea una nueva API key\n\n' +
+            'Error: ' + error.message
           );
         }
         
-        // Error genérico pero con mensaje útil
-        throw new Error(`ERROR GEMINI:\n\n${error.message}`);
+        throw new Error('❌ ERROR GEMINI:\n\n' + error.message);
       }
       
       throw new Error('Error desconocido al conectar con Gemini AI');
@@ -135,12 +136,12 @@ export const geminiService = {
     console.log('Título:', title);
     
     const sanitizedTitle = sanitizeInput(title);
-    const prompt = `Eres un asistente útil. Para la tarea "${sanitizedTitle}", escribe UNA descripción breve en español (máximo 60 caracteres). Responde SOLO la descripción, sin comillas.`;
+    const prompt = `Genera una descripción muy breve (máximo 50 palabras) para esta tarea: "${sanitizedTitle}". Responde SOLO con la descripción, sin comillas ni explicaciones.`;
     
     try {
       const response = await this.chat(prompt);
       const cleaned = response.replace(/["']/g, '').trim();
-      console.log('✅ Sugerencia final:', cleaned);
+      console.log('✅ Sugerencia:', cleaned);
       return cleaned;
     } catch (error) {
       console.error('❌ Error en sugerencia:', error);
