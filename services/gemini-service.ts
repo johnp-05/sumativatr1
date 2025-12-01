@@ -36,7 +36,7 @@ export const geminiService = {
       const genAI = getGeminiClient();
       
       // Usar gemini-1.5-flash que es más estable
-      const modelName = 'gemini-1.5-flash';
+      const modelName = 'gemini-2.5-flash';
       console.log('📡 Usando modelo:', modelName);
       
       const model = genAI.getGenerativeModel({ 
