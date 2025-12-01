@@ -22,21 +22,159 @@ Esta guía te ayudará a reescribir los mensajes de commits del repositorio usan
 
 ---
 
-## 🔄 Commits que Necesitan Ser Reescritos
+## 🔄 Commits que Necesitan Ser Reescritos (Con Mensajes Detallados)
 
-A continuación están los commits actuales y los mensajes sugeridos:
+A continuación están los commits actuales con los mensajes sugeridos incluyendo descripción detallada de los cambios:
 
-| Commit Actual | Mensaje Original | ➡️ Mensaje Sugerido |
-|---------------|------------------|---------------------|
-| `299a524` | holaa | ✨ feat: Actualizar URLs de servicios para conexión local |
-| `708c030` | volver a tratar de corregir | 🐛 fix: Corregir configuración de servicios y contexto de vault |
-| `ab13971` | tratar de corregir errores | ♻️ refactor: Simplificar servicios de tareas y componentes del vault |
-| `a70ca43` | lol | ✨ feat: Mejorar sistema de tareas con IA de Gemini y servicios actualizados |
-| `2641909` | homero | ♻️ refactor: Limpiar código y reorganizar estructura de servicios |
-| `4d58d47` | POM | ✨ feat: Integrar servicio Gemini mejorado con nuevas funcionalidades |
-| `abd69ed` | LOL QMAL XDD | 💄 ui: Actualizar layout de tabs y pantalla de exploración |
-| `0322367` | xddd | ♻️ refactor: Renombrar y mejorar módulo de tareas del vault |
-| `05ff065` | lol q mal | ✨ feat: Implementar sistema completo de gestión de tareas con vault y contexto |
+---
+
+### Commit `05ff065` (Mensaje original: "lol q mal")
+
+**Mensaje sugerido:**
+```
+✨ feat: Implementar sistema completo de gestión de tareas con vault y contexto
+
+- Se agregó el layout de tabs con navegación inferior (app/(tabs)/_layout.tsx)
+- Se creó la pantalla de exploración con listado de tareas (app/(tabs)/explore.tsx)
+- Se implementó la pantalla principal de inicio (app/(tabs)/index.tsx)
+- Se agregó la vista del vault con gestión de tareas (app/(tabs)/vault.tsx)
+- Se mejoró el layout principal de la aplicación (app/_layout.tsx)
+- Se expandió la funcionalidad del index principal (app/index.tsx)
+- Se creó la vista de detalle de tarea (app/task/[id].tsx)
+- Se implementó el formulario de creación de tareas (app/task/create.tsx)
+- Se agregó la vista de tareas del vault (app/vault/index.tsx)
+- Se creó el componente TaskCard para mostrar tareas (componets/TaskCard.tsx)
+- Se implementó el contexto del vault para manejo de estado (context/vault-context.tsx)
+- Se definió el schema de validación de tareas (lib/schemas/task.schema.ts)
+- Se actualizaron las dependencias del proyecto (package.json, package-lock.json)
+```
+
+---
+
+### Commit `0322367` (Mensaje original: "xddd")
+
+**Mensaje sugerido:**
+```
+♻️ refactor: Renombrar y mejorar módulo de tareas del vault
+
+- Se renombró app/vault/index.tsx a app/vault/tasks.tsx para mayor claridad
+- Se mejoró la lógica del componente de tareas del vault con 106 líneas nuevas
+- Se actualizó la referencia en app/(tabs)/vault.tsx al nuevo nombre del archivo
+```
+
+---
+
+### Commit `abd69ed` (Mensaje original: "LOL QMAL XDD")
+
+**Mensaje sugerido:**
+```
+💄 ui: Actualizar layout de tabs y pantalla de exploración
+
+- Se actualizó la configuración del .env.example con nuevas variables
+- Se modificó el layout de tabs para mejorar la navegación (app/(tabs)/_layout.tsx)
+- Se expandió la pantalla de exploración con 53 líneas nuevas (app/(tabs)/explore.tsx)
+- Se mejoró el layout principal con 18 líneas adicionales (app/_layout.tsx)
+- Se creó el archivo placeholder app/gemini.tsx para futura integración
+```
+
+---
+
+### Commit `4d58d47` (Mensaje original: "POM")
+
+**Mensaje sugerido:**
+```
+✨ feat: Integrar servicio Gemini mejorado con nuevas funcionalidades
+
+- Se simplificó la configuración del .env.example
+- Se expandió significativamente la pantalla de exploración (app/(tabs)/explore.tsx)
+- Se mejoró la pantalla principal con nuevas funcionalidades (app/(tabs)/index.tsx)
+- Se actualizó la vista del vault (app/(tabs)/vault.tsx)
+- Se ajustó el formulario de creación de tareas (app/task/create.tsx)
+- Se mejoró la vista de tareas del vault (app/vault/tasks.tsx)
+- Se actualizaron las dependencias con nuevos paquetes (package-lock.json)
+- Se expandió el servicio de Gemini con 73 líneas nuevas (services/gemini-service.ts)
+```
+
+---
+
+### Commit `2641909` (Mensaje original: "homero")
+
+**Mensaje sugerido:**
+```
+♻️ refactor: Limpiar código y reorganizar estructura de servicios
+
+- Se eliminaron variables innecesarias del .env.example
+- Se removió el archivo .gitignore redundante
+- Se simplificó el archivo app/index.tsx eliminando 117 líneas de código duplicado
+- Se reorganizó el formulario de creación de tareas (app/task/create.tsx)
+- Se mejoró la vista de tareas del vault (app/vault/tasks.tsx)
+- Se agregó el middleware CORS para el servidor (cors-middleware.js)
+- Se actualizó la base de datos JSON con nuevos datos (db.json)
+- Se actualizaron las dependencias del proyecto (package.json)
+- Se simplificó el servicio de Gemini eliminando código redundante (services/gemini-service.ts)
+```
+
+---
+
+### Commit `a70ca43` (Mensaje original: "lol")
+
+**Mensaje sugerido:**
+```
+✨ feat: Mejorar sistema de tareas con IA de Gemini y servicios actualizados
+
+- Se mejoró la pantalla de exploración con mejor UX (app/(tabs)/explore.tsx)
+- Se expandió la vista de detalle de tarea con 87 líneas nuevas (app/task/[id].tsx)
+- Se mejoró el formulario de creación con validaciones (app/task/create.tsx)
+- Se refactorizó completamente la vista de tareas del vault (app/vault/tasks.tsx)
+- Se actualizó la base de datos JSON con nuevos campos (db.json)
+- Se expandió el servicio de Gemini con funcionalidades de IA (services/gemini-service.ts)
+- Se mejoró el servicio de tareas con nuevos métodos (services/task-service.ts)
+```
+
+---
+
+### Commit `ab13971` (Mensaje original: "tratar de corregir errores")
+
+**Mensaje sugerido:**
+```
+♻️ refactor: Simplificar servicios de tareas y componentes del vault
+
+- Se mejoró la pantalla principal con 30 líneas adicionales (app/(tabs)/index.tsx)
+- Se actualizó la vista del vault con mejor manejo de estado (app/(tabs)/vault.tsx)
+- Se simplificó el formulario de creación eliminando código duplicado (app/task/create.tsx)
+- Se refactorizó la vista de tareas del vault (app/vault/tasks.tsx)
+- Se actualizó la base de datos JSON (db.json)
+- Se actualizaron las dependencias del proyecto (package.json)
+- Se corrigió la configuración del servicio de Gemini (services/gemini-service.ts)
+- Se simplificó el servicio de tareas eliminando lógica redundante (services/task-service.ts)
+```
+
+---
+
+### Commit `708c030` (Mensaje original: "volver a tratar de corregir")
+
+**Mensaje sugerido:**
+```
+🐛 fix: Corregir configuración de servicios y contexto de vault
+
+- Se actualizó la configuración del app.json con nuevos ajustes
+- Se expandió el contexto del vault con 95 líneas de mejoras (context/vault-context.tsx)
+- Se agregaron nuevas dependencias al proyecto (package-lock.json, package.json)
+- Se refactorizó el servicio de Gemini con mejor manejo de errores (services/gemini-service.ts)
+- Se mejoró el servicio de tareas con 111 líneas nuevas (services/task-service.ts)
+```
+
+---
+
+### Commit `299a524` (Mensaje original: "holaa")
+
+**Mensaje sugerido:**
+```
+✨ feat: Actualizar URLs de servicios para conexión local
+
+- Se actualizó la URL del servicio de Gemini para desarrollo local (services/gemini-service.ts)
+- Se actualizó la URL del servicio de tareas para desarrollo local (services/task-service.ts)
+```
 
 ---
 
@@ -80,12 +218,14 @@ git push --force origin copilot/rewrite-commit-messages
 
 > ⚠️ **Nota**: `git filter-branch` está deprecado. Para proyectos nuevos, considera usar `git filter-repo`. Este script se proporciona como referencia.
 
-Crea y ejecuta este script en tu máquina local:
+> 💡 **Recomendación**: Para mensajes multilínea como los sugeridos arriba, es mejor usar la **Opción 1 (Rebase Interactivo)** ya que permite editar cada mensaje manualmente con el formato completo.
+
+Si solo quieres cambiar la primera línea de cada commit, puedes usar este script en tu máquina local:
 
 ```bash
 #!/bin/bash
 
-# Script para reescribir commits automáticamente
+# Script para reescribir la primera línea de commits automáticamente
 # ADVERTENCIA: Esto reescribirá el historial. Úsalo con cuidado.
 
 # Guarda esto como rewrite-commits.sh y ejecuta: bash rewrite-commits.sh
