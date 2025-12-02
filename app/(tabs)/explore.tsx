@@ -1,74 +1,109 @@
 import { View, Text, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState, useRef } from "react";
-import { Send, Sparkles, Bot, User, TestTube2 } from "lucide-react-native";
-import { geminiService } from "@/services/gemini-service";
+import { Send, Sparkles, Bot, User, Zap } from "lucide-react-native";
+import { geminiService, TaskManagementFunctions } from "@/services/gemini-service";
+import { useTasks } from "@/context/task-context";
+import { useVault } from "@/context/vault-context";
 
 interface Message {
   id: string;
   text: string;
   isUser: boolean;
   timestamp: Date;
+  type?: 'info' | 'success' | 'error' | 'warning';
 }
 
 export default function ExploreScreen() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      text: "Hola! Soy tu asistente con IA Gemini. Puedo ayudarte a:\n\n- Organizar tus tareas\n- Darte consejos de productividad\n- Responder tus preguntas\n- Crear descripciones para tus tareas\n\n¿En qué puedo ayudarte hoy?",
+      text: "¡Hola! 👋 Soy tu asistente inteligente con IA Gemini.\n\n" +
+            "**Puedo ayudarte con:**\n\n" +
+            "📋 Ver tus tareas: \"Muéstrame mis tareas\"\n" +
+            "➕ Crear tareas: \"Crea una tarea llamada X\"\n" +
+            "✏️ Editar tareas: \"Actualiza la tarea #3\"\n" +
+            "🗑️ Eliminar tareas: \"Elimina la tarea #5\"\n" +
+            "🔐 Gestión de bóveda: \"Mueve la tarea #2 a la bóveda\"\n" +
+            "⚡ Comando especial: Escribe \"concedido\" para mover la última tarea mencionada a la bóveda\n\n" +
+            "¿Qué necesitas hacer hoy?",
       isUser: false,
       timestamp: new Date(),
+      type: 'info'
     },
   ]);
   const [inputText, setInputText] = useState("");
   const [loading, setLoading] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
 
-  const testConnection = async () => {
-    setLoading(true);
-    console.log('🧪 === PRUEBA DE CONEXIÓN GEMINI ===');
-    
-    try {
-      const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
-      console.log('API Key presente:', apiKey ? 'SÍ' : 'NO');
-      
-      if (!apiKey) {
-        Alert.alert(
-          "API Key no encontrada",
-          "Para configurar Gemini AI:\n\n" +
-          "1. Ve a: https://aistudio.google.com/app/apikey\n" +
-          "2. Crea una API key\n" +
-          "3. Crea un archivo .env en la raíz\n" +
-          "4. Añade: EXPO_PUBLIC_GEMINI_API_KEY=tu_key\n" +
-          "5. Reinicia: npm start",
-          [{ text: "Entendido" }]
-        );
-        setLoading(false);
-        return;
-      }
+  // Hooks para acceso a tareas
+  const { 
+    tasks, 
+    addTask, 
+    updateTask, 
+    deleteTask,
+    loading: tasksLoading 
+  } = useTasks();
+  
+  const { 
+    vaultTasks, 
+    addVaultTask, 
+    updateVaultTask, 
+    deleteVaultTask,
+    isUnlocked: isVaultUnlocked
+  } = useVault();
 
-      Alert.alert("Probando", "Verificando conexión con Gemini AI...");
-      
-      const response = await geminiService.chat("Di 'Hola' en una sola palabra");
-      console.log('✅ Respuesta de prueba:', response);
-      
-      Alert.alert(
-        "Funciona correctamente",
-        `Respuesta: "${response}"\n\nGemini AI está configurado correctamente.`,
-        [{ text: "Genial" }]
-      );
-    } catch (error) {
-      console.error('❌ Error en prueba:', error);
-      
-      let errorMsg = "Error desconocido";
-      if (error instanceof Error) {
-        errorMsg = error.message;
+  // Crear funciones de gestión de tareas para Gemini
+  const taskFunctions: TaskManagementFunctions = {
+    getNormalTasks: async () => tasks,
+    getVaultTasks: async () => vaultTasks,
+    
+    createTask: async (title: string, description: string, isVault: boolean) => {
+      if (isVault) {
+        const newTask = {
+          id: Date.now().toString(),
+          title,
+          description,
+          completed: false,
+          createdAt: new Date().toISOString()
+        };
+        await addVaultTask({ title, description, completed: false });
+        return newTask;
+      } else {
+        return await addTask({ title, description, completed: false });
       }
+    },
+    
+    updateTask: async (id: string | number, updates: any, isVault: boolean) => {
+      if (isVault) {
+        await updateVaultTask(id.toString(), updates);
+        return { id, ...updates };
+      } else {
+        return await updateTask(Number(id), updates);
+      }
+    },
+    
+    deleteTask: async (id: string | number, isVault: boolean) => {
+      if (isVault) {
+        await deleteVaultTask(id.toString());
+      } else {
+        await deleteTask(Number(id));
+      }
+    },
+    
+    moveToVault: async (id: number, task: any) => {
+      // Crear tarea en bóveda
+      await addVaultTask({
+        title: task.title,
+        description: task.description || '',
+        completed: task.completed
+      });
       
-      Alert.alert("Error", errorMsg, [{ text: "OK" }]);
-    } finally {
-      setLoading(false);
-    }
+      // Eliminar de tareas normales
+      await deleteTask(id);
+    },
+    
+    isVaultUnlocked: () => isVaultUnlocked
   };
 
   const handleSend = async () => {
@@ -83,6 +118,7 @@ export default function ExploreScreen() {
 
     console.log('💬 Usuario envió:', userMessage.text);
     setMessages((prev) => [...prev, userMessage]);
+    const currentInput = inputText.trim();
     setInputText("");
     setLoading(true);
 
@@ -91,14 +127,29 @@ export default function ExploreScreen() {
     }, 100);
 
     try {
-      const response = await geminiService.chat(inputText.trim());
+      const response = await geminiService.chatWithTaskManagement(
+        currentInput,
+        taskFunctions
+      );
+      
       console.log('✅ IA respondió:', response.substring(0, 50) + '...');
+      
+      // Detectar tipo de mensaje según el contenido
+      let messageType: 'info' | 'success' | 'error' | 'warning' = 'info';
+      if (response.includes('✅') || response.includes('exitosamente')) {
+        messageType = 'success';
+      } else if (response.includes('❌') || response.includes('Error')) {
+        messageType = 'error';
+      } else if (response.includes('⚠️') || response.includes('Confirmación')) {
+        messageType = 'warning';
+      }
       
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         text: response,
         isUser: false,
         timestamp: new Date(),
+        type: messageType
       };
       
       setMessages((prev) => [...prev, aiMessage]);
@@ -117,9 +168,10 @@ export default function ExploreScreen() {
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: `Error: ${errorText}`,
+        text: `❌ **Error**\n\n${errorText}`,
         isUser: false,
         timestamp: new Date(),
+        type: 'error'
       };
       
       setMessages((prev) => [...prev, errorMessage]);
@@ -127,6 +179,25 @@ export default function ExploreScreen() {
       setLoading(false);
     }
   };
+
+  const getMessageStyle = (type?: string) => {
+    switch (type) {
+      case 'success':
+        return 'bg-green-900/30 border-green-700';
+      case 'error':
+        return 'bg-red-900/30 border-red-700';
+      case 'warning':
+        return 'bg-yellow-900/30 border-yellow-700';
+      default:
+        return 'bg-gray-800 border-gray-700';
+    }
+  };
+
+  const quickActions = [
+    { text: "Muéstrame mis tareas", icon: "📋" },
+    { text: "Crea una tarea", icon: "➕" },
+    { text: "Ver tareas de la bóveda", icon: "🔐" },
+  ];
 
   return (
     <SafeAreaView className="flex-1 bg-gray-900">
@@ -143,29 +214,39 @@ export default function ExploreScreen() {
                 <Sparkles color="#fff" size={24} />
               </View>
               <View>
-                <Text className="text-white text-xl font-bold">Asistente IA</Text>
-                <Text className="text-gray-400 text-sm">Powered by Gemini</Text>
+                <Text className="text-white text-xl font-bold">Asistente IA Mejorado</Text>
+                <Text className="text-gray-400 text-sm">Gestión inteligente de tareas</Text>
               </View>
             </View>
             
-            <TouchableOpacity
-              onPress={testConnection}
-              disabled={loading}
-              className={`px-3 py-2 rounded-lg flex-row items-center ${
-                loading ? "bg-gray-700" : "bg-gray-800"
-              }`}
-            >
-              {loading ? (
-                <ActivityIndicator size="small" color="#9333ea" />
-              ) : (
-                <>
-                  <TestTube2 color="#9333ea" size={16} />
-                  <Text className="text-purple-400 text-xs ml-1 font-medium">Probar</Text>
-                </>
-              )}
-            </TouchableOpacity>
+            <View className="bg-purple-900/50 px-3 py-1 rounded-full">
+              <Text className="text-purple-300 text-xs font-bold">
+                {tasks.length} tareas
+              </Text>
+            </View>
           </View>
         </View>
+
+        {/* Quick Actions */}
+        {messages.length === 1 && (
+          <View className="px-4 py-3 border-b border-gray-800">
+            <Text className="text-gray-400 text-xs mb-2">ACCIONES RÁPIDAS</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {quickActions.map((action, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => {
+                    setInputText(action.text);
+                  }}
+                  className="bg-gray-800 px-4 py-2 rounded-full mr-2 flex-row items-center border border-gray-700"
+                >
+                  <Text className="text-white mr-1">{action.icon}</Text>
+                  <Text className="text-gray-300 text-sm">{action.text}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
 
         {/* Messages */}
         <ScrollView 
@@ -179,20 +260,20 @@ export default function ExploreScreen() {
               className={`mb-4 flex-row ${message.isUser ? "justify-end" : "justify-start"}`}
             >
               {!message.isUser && (
-                <View className="w-8 h-8 bg-purple-600 rounded-full items-center justify-center mr-2">
+                <View className="w-8 h-8 bg-purple-600 rounded-full items-center justify-center mr-2 mt-1">
                   <Bot color="#fff" size={16} />
                 </View>
               )}
               
               <View
-                className={`max-w-[75%] p-3 rounded-2xl ${
+                className={`max-w-[80%] p-3 rounded-2xl ${
                   message.isUser
                     ? "bg-blue-600"
-                    : "bg-gray-800 border border-gray-700"
+                    : `${getMessageStyle(message.type)} border`
                 }`}
               >
-                <Text className="text-white leading-5">{message.text}</Text>
-                <Text className="text-gray-400 text-xs mt-1">
+                <Text className="text-white leading-5 whitespace-pre-line">{message.text}</Text>
+                <Text className="text-gray-400 text-xs mt-2">
                   {message.timestamp.toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit",
@@ -201,7 +282,7 @@ export default function ExploreScreen() {
               </View>
 
               {message.isUser && (
-                <View className="w-8 h-8 bg-blue-600 rounded-full items-center justify-center ml-2">
+                <View className="w-8 h-8 bg-blue-600 rounded-full items-center justify-center ml-2 mt-1">
                   <User color="#fff" size={16} />
                 </View>
               )}
@@ -209,13 +290,13 @@ export default function ExploreScreen() {
           ))}
 
           {loading && (
-            <View className="flex-row items-center mb-4">
+            <View className="flex-row items-start mb-4">
               <View className="w-8 h-8 bg-purple-600 rounded-full items-center justify-center mr-2">
                 <Bot color="#fff" size={16} />
               </View>
               <View className="bg-gray-800 border border-gray-700 p-3 rounded-2xl flex-row items-center">
-                <ActivityIndicator color="#fff" size="small" />
-                <Text className="text-white ml-2">Pensando...</Text>
+                <ActivityIndicator color="#9333ea" size="small" />
+                <Text className="text-white ml-2">Procesando...</Text>
               </View>
             </View>
           )}
@@ -223,22 +304,33 @@ export default function ExploreScreen() {
 
         {/* Input */}
         <View className="px-4 py-4 border-t border-gray-800">
+          {/* Tip del comando especial */}
+          {!loading && messages.length > 1 && (
+            <View className="bg-purple-900/30 border border-purple-700 rounded-lg px-3 py-2 mb-3 flex-row items-center">
+              <Zap color="#a855f7" size={16} />
+              <Text className="text-purple-300 text-xs ml-2 flex-1">
+                <Text className="font-bold">Comando especial:</Text> Escribe "concedido" para mover la última tarea a la bóveda
+              </Text>
+            </View>
+          )}
+          
           <View className="flex-row items-center bg-gray-800 rounded-full px-4 py-2">
             <TextInput
               className="flex-1 text-white py-2"
-              placeholder="Escribe tu mensaje..."
+              placeholder="Escribe tu mensaje o comando..."
               placeholderTextColor="#6b7280"
               value={inputText}
               onChangeText={setInputText}
               multiline
               maxLength={500}
               editable={!loading}
+              onSubmitEditing={handleSend}
             />
             <TouchableOpacity
               onPress={handleSend}
               disabled={!inputText.trim() || loading}
               className={`ml-2 w-10 h-10 rounded-full items-center justify-center ${
-                inputText.trim() && !loading ? "bg-blue-600" : "bg-gray-700"
+                inputText.trim() && !loading ? "bg-purple-600" : "bg-gray-700"
               }`}
             >
               {loading ? (
@@ -248,6 +340,7 @@ export default function ExploreScreen() {
               )}
             </TouchableOpacity>
           </View>
+          
           <Text className="text-gray-500 text-xs text-center mt-2">
             Gemini puede cometer errores. Verifica información importante.
           </Text>

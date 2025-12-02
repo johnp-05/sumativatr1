@@ -21,6 +21,7 @@ interface VaultContextType {
   updateVaultTask: (id: string, task: Partial<VaultTask>) => Promise<void>;
   deleteVaultTask: (id: string) => Promise<void>;
   toggleVaultTaskComplete: (id: string) => Promise<void>;
+  resetPin: () => Promise<void>;
   loading: boolean;
 }
 
@@ -39,25 +40,25 @@ export function VaultProvider({ children }: VaultProviderProps) {
   const [vaultTasks, setVaultTasks] = useState<VaultTask[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Cargar PIN y tareas al iniciar
   useEffect(() => {
     loadVaultData();
   }, []);
 
   const loadVaultData = async () => {
     try {
-      console.log('🔐 Cargando datos de la bóveda...');
+      console.log('🔐 === CARGANDO DATOS DE BÓVEDA ===');
       
-      // Cargar PIN
       const storedPin = await SecureStore.getItemAsync(VAULT_PIN_KEY);
+      console.log('PIN almacenado:', storedPin ? 'SÍ (existe)' : 'NO (null)');
+      
       if (storedPin) {
         setStoredPin(storedPin);
-        console.log('✅ PIN cargado');
+        console.log('✅ PIN cargado exitosamente');
       } else {
-        console.log('ℹ️ No hay PIN configurado');
+        setStoredPin(null);
+        console.log('ℹ️ No hay PIN configurado - Primera vez');
       }
       
-      // Cargar tareas
       const storedTasks = await SecureStore.getItemAsync(VAULT_TASKS_KEY);
       if (storedTasks) {
         const tasks = JSON.parse(storedTasks);
@@ -70,6 +71,7 @@ export function VaultProvider({ children }: VaultProviderProps) {
       console.error('❌ Error al cargar datos de la bóveda:', error);
     } finally {
       setLoading(false);
+      console.log('🏁 Carga de datos completada');
     }
   };
 
@@ -84,16 +86,30 @@ export function VaultProvider({ children }: VaultProviderProps) {
   };
 
   const unlock = useCallback(async (enteredPin: string): Promise<boolean> => {
-    console.log('🔓 Intentando desbloquear bóveda...');
+    console.log('🔓 === INTENTANDO DESBLOQUEAR BÓVEDA ===');
+    console.log('PIN almacenado en estado:', pin);
+    console.log('¿Es null?:', pin === null);
+    console.log('PIN ingresado:', enteredPin);
+    console.log('Longitud PIN ingresado:', enteredPin.length);
     
-    if (pin === null) {
+    // CRÍTICO: Verificar en SecureStore directamente por si el estado no está sincronizado
+    const storedPin = await SecureStore.getItemAsync(VAULT_PIN_KEY);
+    console.log('PIN en SecureStore:', storedPin ? 'EXISTE' : 'NO EXISTE (null)');
+    
+    if (storedPin === null || storedPin === undefined) {
       // Primera vez: configurar PIN
-      console.log('🆕 Configurando nuevo PIN');
+      console.log('🆕 === CONFIGURANDO NUEVO PIN (PRIMERA VEZ) ===');
       try {
         await SecureStore.setItemAsync(VAULT_PIN_KEY, enteredPin);
+        console.log('✅ PIN guardado en SecureStore:', enteredPin);
+        
         setStoredPin(enteredPin);
+        console.log('✅ PIN guardado en estado');
+        
         setIsUnlocked(true);
-        console.log('✅ PIN configurado y bóveda desbloqueada');
+        console.log('✅ Bóveda desbloqueada (isUnlocked = true)');
+        
+        console.log('✅ ¡PIN CONFIGURADO EXITOSAMENTE!');
         return true;
       } catch (error) {
         console.error('❌ Error al guardar PIN:', error);
@@ -101,14 +117,19 @@ export function VaultProvider({ children }: VaultProviderProps) {
       }
     }
     
-    // Verificar PIN
-    if (enteredPin === pin) {
+    // Verificar PIN existente
+    console.log('🔍 === VERIFICANDO PIN EXISTENTE ===');
+    console.log('Comparando:', enteredPin, '===', storedPin);
+    const isCorrect = enteredPin === storedPin;
+    console.log('Resultado de comparación:', isCorrect);
+    
+    if (isCorrect) {
       setIsUnlocked(true);
-      console.log('✅ Bóveda desbloqueada');
+      console.log('✅ PIN CORRECTO - Bóveda desbloqueada');
       return true;
     }
     
-    console.log('❌ PIN incorrecto');
+    console.log('❌ PIN INCORRECTO');
     return false;
   }, [pin]);
 
@@ -125,6 +146,19 @@ export function VaultProvider({ children }: VaultProviderProps) {
     } catch (error) {
       console.error('❌ Error al actualizar PIN:', error);
       throw new Error('No se pudo actualizar el PIN');
+    }
+  }, []);
+
+  const resetPin = useCallback(async () => {
+    console.log('🔄 Reseteando PIN...');
+    try {
+      await SecureStore.deleteItemAsync(VAULT_PIN_KEY);
+      setStoredPin(null);
+      setIsUnlocked(false);
+      console.log('✅ PIN eliminado - Bóveda reseteada');
+    } catch (error) {
+      console.error('❌ Error al resetear PIN:', error);
+      throw new Error('No se pudo resetear el PIN');
     }
   }, []);
 
@@ -187,13 +221,24 @@ export function VaultProvider({ children }: VaultProviderProps) {
     unlock,
     lock,
     setPin,
-    hasPin: pin !== null,
+    hasPin: pin !== null && pin !== undefined,
     addVaultTask,
     updateVaultTask,
     deleteVaultTask,
     toggleVaultTaskComplete,
+    resetPin,
     loading,
   };
+
+  // Log para debug
+  useEffect(() => {
+    console.log('📊 Estado del contexto:', { 
+      isUnlocked, 
+      hasPin: pin !== null, 
+      pinValue: pin ? '***' + pin.slice(-2) : 'null',
+      tasksCount: vaultTasks.length 
+    });
+  }, [isUnlocked, pin, vaultTasks.length]);
 
   return <VaultContext.Provider value={value}>{children}</VaultContext.Provider>;
 }

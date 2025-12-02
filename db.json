@@ -1,32 +1,18 @@
 {
   "tasks": [
     {
-      "id": 1,
-      "title": "Tarea de ejemplo",
-      "description": "mierdaaa",
-      "completed": true,
-      "createdAt": "2024-01-01T00:00:00.000Z"
-    },
-    {
-      "title": "Prueba después de hacer público",
-      "description": "Test",
+      "title": "Estudiar para Filosofía",
+      "description": "Sumérgete en el pensamiento crítico y la historia de las ideas. Analiza textos complejos, comprende conceptos fundamentales y desarrolla tu propia perspectiva.",
       "completed": false,
-      "createdAt": "2024-11-29T00:00:00.000Z",
-      "id": 2
+      "createdAt": "2025-12-02T20:50:50.654Z",
+      "id": 1
     },
     {
-      "title": "hacer quimica.",
-      "description": "hacer fisica.",
-      "completed": false,
-      "createdAt": "2025-11-30T02:27:30.525Z",
-      "id": 3
-    },
-    {
-      "title": "Pasear al perro",
+      "title": "para ir al odontólogo",
       "description": "",
       "completed": false,
-      "createdAt": "2025-11-30T02:51:19.357Z",
-      "id": 4
+      "createdAt": "2025-12-02T21:10:02.846Z",
+      "id": 2
     }
   ]
 }
