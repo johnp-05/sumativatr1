@@ -2,6 +2,11 @@
 
 Una aplicación React Native construida con Expo que permite gestionar tareas con integración de JSON Server y Gemini AI.
 
+## Demostración
+
+![Demo 1](GIF_20251202_164616_339.gif)
+![Demo 2](GIF_20251202_165024_866.gif)
+
 ## Características
 
 - ✅ **Gestión de Tareas (CRUD)**: Crear, leer, actualizar y eliminar tareas
@@ -44,8 +49,6 @@ Puedes obtener una API key en: https://makersuite.google.com/app/apikey
 ## Uso
 
 ### Ejecutar JSON Server
-
-JSON Server simula una API REST para gestionar las tareas.
 
 ```bash
 npm run server
