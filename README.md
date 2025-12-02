@@ -2,6 +2,11 @@
 
 Una aplicación React Native construida con Expo que permite gestionar tareas con integración de JSON Server y Gemini AI.
 
+## Demostración
+
+![Demo 1](GIF_20251202_164616_339.gif)
+![Demo 2](GIF_20251202_165024_866.gif)
+
 ## Características
 
 - ✅ **Gestión de Tareas (CRUD)**: Crear, leer, actualizar y eliminar tareas
@@ -34,160 +39,88 @@ npm install
 ```bash
 cp .env.example .env
 ```
-Edita el archivo `.env` y añade tu API key de Gemini:
+
+Edita el archivo `.env`:
 ```
 EXPO_PUBLIC_GEMINI_API_KEY=tu_api_key_aqui
 ```
 
-Puedes obtener una API key en: https://makersuite.google.com/app/apikey
-
 ## Uso
 
 ### Ejecutar JSON Server
-
-JSON Server simula una API REST para gestionar las tareas.
-
 ```bash
 npm run server
 ```
 
-Esto iniciará el servidor en `http://localhost:3001`. Los endpoints disponibles son:
-
-- `GET /tasks` - Obtener todas las tareas
-- `GET /tasks/:id` - Obtener una tarea específica
-- `POST /tasks` - Crear una nueva tarea
-- `PATCH /tasks/:id` - Actualizar una tarea
-- `DELETE /tasks/:id` - Eliminar una tarea
-
 ### Ejecutar la Aplicación
-
-En una terminal separada:
-
 ```bash
 npm start
 ```
 
-O para ejecutar todo simultáneamente (requiere `concurrently`):
+O ejecutar todo simultáneamente:
 ```bash
 npm install -D concurrently
 npm run dev
 ```
 
-### Opciones de Ejecución
-
-- **Web**: Presiona `w` en la terminal
-- **Android**: Presiona `a` (requiere emulador o dispositivo conectado)
-- **iOS**: Presiona `i` (requiere Xcode en macOS)
-
 ## Estructura del Proyecto
-
 ```
 sumativatr1/
-├── app/                    # Pantallas (Expo Router)
-│   ├── (tabs)/            # Pestañas de navegación
-│   │   ├── index.tsx      # Pantalla principal
-│   │   ├── tasks.tsx      # Lista de tareas
-│   │   └── explore.tsx    # Pantalla de exploración
-│   ├── task/              # Rutas dinámicas para tareas
-│   │   ├── create.tsx     # Crear nueva tarea
-│   │   └── [id].tsx       # Editar tarea (parámetro dinámico)
-│   ├── gemini.tsx         # Chat con Gemini AI
-│   └── _layout.tsx        # Layout principal
-├── components/            # Componentes reutilizables
-├── context/               # Contextos de React
-│   └── task-context.tsx   # Estado global de tareas
-├── services/              # Servicios de API
-│   ├── task-service.ts    # Operaciones CRUD de tareas
-│   └── gemini-service.ts  # Integración con Gemini AI
-├── utils/                 # Utilidades
-│   └── validation.ts      # Validación de formularios
-├── db.json               # Base de datos de JSON Server
-└── .env.example          # Ejemplo de variables de entorno
+├── app/
+│   ├── (tabs)/
+│   ├── task/
+│   ├── gemini.tsx
+│   └── _layout.tsx
+├── components/
+├── context/
+├── services/
+├── utils/
+├── db.json
+└── .env.example
 ```
 
 ## Validación de Formularios
+```ts
+import { validateTaskTitle } from '@/utils/validation';
 
-Los formularios de tareas incluyen validación para:
-
-- **Título**: Obligatorio, 3-100 caracteres, solo alfanuméricos y puntuación básica
-- **Descripción**: Opcional, máximo 500 caracteres, solo alfanuméricos y puntuación básica
-
-```typescript
-// Ejemplo de uso
-import { validateTaskTitle, validateTaskDescription } from '@/utils/validation';
-
-const titleValidation = validateTaskTitle('Mi tarea');
-if (!titleValidation.isValid) {
-  console.log(titleValidation.error);
-}
+const result = validateTaskTitle('Mi tarea');
 ```
 
 ## Integración con Gemini AI
-
-### Configuración
-
-1. Obtén una API key en [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Añade la key al archivo `.env`:
-```
-EXPO_PUBLIC_GEMINI_API_KEY=tu_api_key_aqui
-```
-
-### Uso
-
-La aplicación ofrece dos formas de interactuar con Gemini AI:
-
-1. **Chat directo**: Accede desde la pantalla principal al botón "Gemini AI"
-2. **Sugerencias**: Al crear una tarea, usa el botón "Sugerir con IA" para generar una descripción automática
-
-```typescript
-// Ejemplo de uso del servicio
+```ts
 import { geminiService } from '@/services/gemini-service';
 
-const response = await geminiService.chat('¿Cómo organizo mis tareas?');
-const suggestion = await geminiService.suggestTaskDescription('Estudiar React');
+const response = await geminiService.chat('Mensaje...');
 ```
 
 ## Context API
-
-El estado de las tareas se gestiona globalmente con Context API:
-
-```typescript
+```ts
 import { useTasks } from '@/context/task-context';
-
-function MiComponente() {
-  const { tasks, addTask, updateTask, deleteTask, loading, error } = useTasks();
-  
-  // Usar el estado y las funciones...
-}
 ```
 
 ## Scripts Disponibles
-
 | Comando | Descripción |
-|---------|-------------|
+|--------|-------------|
 | `npm start` | Inicia Expo |
-| `npm run server` | Inicia JSON Server en puerto 3001 |
-| `npm run web` | Abre la app en el navegador |
-| `npm run android` | Abre en emulador Android |
-| `npm run ios` | Abre en simulador iOS |
-| `npm run lint` | Ejecuta el linter |
+| `npm run server` | Inicia JSON Server |
+| `npm run web` | Navegador |
+| `npm run android` | Emulador Android |
+| `npm run ios` | Simulador iOS |
+| `npm run lint` | Corre el linter |
 
-## Tecnologías Utilizadas
-
-- **Expo SDK 54**: Framework de desarrollo
-- **Expo Router 6**: Navegación basada en archivos
-- **React Native 0.81**: Framework de UI
-- **NativeWind**: Estilos con Tailwind CSS
-- **JSON Server**: API REST simulada
-- **Google Generative AI**: Integración con Gemini AI
-- **TypeScript**: Tipado estático
+## Tecnologías
+- Expo SDK 54
+- Expo Router 6
+- React Native 0.81
+- NativeWind
+- JSON Server
+- Gemini AI
+- TypeScript
 
 ## Notas de Seguridad
-
-- Nunca compartas tu API key de Gemini
-- El archivo `.env` está incluido en `.gitignore` para proteger tus credenciales
-- En producción, usa variables de entorno del servidor
+- No compartas tu API key
+- `.env` está en `.gitignore`
+- Usa variables seguras en producción
 
 ## Licencia
-
-Proyecto privado para propósitos educativos.
+Proyecto privado para fines educativos.

@@ -13,6 +13,13 @@
       "completed": false,
       "createdAt": "2025-12-02T21:10:02.846Z",
       "id": 2
+    },
+    {
+      "title": "Ir al colegio",
+      "description": "",
+      "completed": false,
+      "createdAt": "2025-12-02T21:43:42.559Z",
+      "id": 3
     }
   ]
 }
