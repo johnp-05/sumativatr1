@@ -4,8 +4,8 @@ Una aplicación React Native construida con Expo que permite gestionar tareas co
 
 ## Demostración
 
-![Demo 1](GIF_20251202_164616_339.gif)
-![Demo 2](GIF_20251202_165024_866.gif)
+![Demo 1](assets/images/GIF_20251202_164616_339.gif)
+![Demo 2](assets/images/GIF_20251202_165024_866.gif)
 
 ## Características
 
