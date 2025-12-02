@@ -129,7 +129,7 @@ export default function CreateTaskScreen() {
         {/* INFO */}
         <View className="bg-purple-900/30 border border-purple-700 rounded-lg p-4 mb-6">
           <Text className="text-purple-300 text-sm">
-            💡 <Text className="font-bold">Tip:</Text> Usa "Sugerir con IA" para generar una descripción automática
+            💡 <Text className="font-bold">Tip:</Text> Usa &quot;Sugerir con IA&quot; para generar una descripción automática
           </Text>
         </View>
 
